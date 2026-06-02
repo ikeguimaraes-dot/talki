@@ -99,6 +99,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
   const [labelText, setLabelText] = useState('');
   const [labelColor, setLabelColor] = useState(LABEL_COLORS[0]);
   const [labelSaveLoading, setLabelSaveLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('quadro');
 
   const fetchData = async () => {
     try {
@@ -432,7 +433,26 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
         )}
       </div>
 
-      {/* Kanban Board */}
+      {/* View Tabs */}
+      <div className="view-tabs">
+        {[
+          { id: 'grade', label: 'Grade' },
+          { id: 'quadro', label: 'Quadro' },
+          { id: 'calendario', label: 'Calendário' },
+          { id: 'graficos', label: 'Gráficos' },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            className={`view-tab${activeTab === tab.id ? ' active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+            disabled={tab.id !== 'quadro'}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'quadro' ? (
       <div className="kanban-board scroller">
         {buckets.map(bucket => {
           const bucketTasks = tasks.filter(t => t.bucket_id === bucket.id);
@@ -862,6 +882,15 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
           </div>
         )}
       </div>
+      ) : (
+        <div style={{
+          padding: '4rem 2rem', textAlign: 'center',
+          color: 'var(--text-secondary)', backgroundColor: 'var(--bg-surface)',
+          borderRadius: 'var(--radius-md)', marginTop: '0.5rem',
+        }}>
+          <p style={{ fontSize: '1rem' }}>Visualização em desenvolvimento.</p>
+        </div>
+      )}
 
       {/* Task Details Modal */}
       {selectedTaskId && (

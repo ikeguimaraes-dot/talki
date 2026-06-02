@@ -832,10 +832,11 @@ dialog.premium-modal:focus-visible {
   flex: 1;
   overflow: auto;
   padding: 2rem 2.5rem;
+  background-color: #F5F5F5;
 }
 
 .sidebar {
-  width: 240px;
+  width: 280px;
   flex-shrink: 0;
   background-color: #FFFFFF;
   border-right: 1px solid #EAEAEA;
@@ -874,6 +875,123 @@ dialog.premium-modal:focus-visible {
   background-color: #EFF3FF;
   color: #1A56C4;
   font-weight: 600;
+}
+
+/* === Sidebar Create Button === */
+.sidebar-create-btn {
+  width: 100%;
+  background-color: #03110D;
+  color: #F4F1EA;
+  border: none;
+  border-radius: 4px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0;
+  text-transform: none;
+  transition: background-color 0.15s;
+}
+
+.sidebar-create-btn:hover {
+  background-color: #07221A;
+}
+
+/* === Sidebar Section === */
+.sidebar-section-title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #AAAAAA;
+  padding: 0 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+/* === View Tabs === */
+.view-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 1px solid #E0E0E0;
+  margin-bottom: 1.5rem;
+}
+
+.view-tab {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: var(--font-sans);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.view-tab:hover:not(:disabled) {
+  color: var(--text-primary);
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.view-tab.active {
+  color: #A38560;
+  border-bottom-color: #A38560;
+  font-weight: 600;
+}
+
+.view-tab:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* === Filter Pills === */
+.filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 1rem 0 1.5rem;
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid #DCDCDC;
+  background: #FFFFFF;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  transition: all 0.15s;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.filter-pill:hover {
+  border-color: #BDBDBD;
+  color: var(--text-primary);
+  background: #F8F8F8;
+}
+
+.filter-pill.active {
+  background: #03110D;
+  border-color: #03110D;
+  color: #FFFFFF;
 }
 
 /* Label tag */

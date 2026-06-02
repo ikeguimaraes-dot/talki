@@ -46,6 +46,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectProject })
 
   // Delete
   const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null);
+  const [activePill, setActivePill] = useState<string>('Recente');
 
   const fetchProjects = async () => {
     try {
@@ -226,6 +227,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectProject })
           </button>
         </div>
       )}
+
+      {/* Filter Pills */}
+      <div className="filter-pills">
+        {['Recente', 'Compartilhado', 'Pessoal', 'Fixado', 'Recomendado'].map(pill => (
+          <button
+            key={pill}
+            className={`filter-pill${activePill === pill ? ' active' : ''}`}
+            onClick={() => setActivePill(pill)}
+          >
+            {pill}
+          </button>
+        ))}
+        <button
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            padding: '0.3rem 0.5rem', color: 'var(--text-secondary)',
+            display: 'flex', alignItems: 'center',
+          }}
+          title="Pesquisar planos"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+      </div>
 
       {/* Plans list */}
       <div style={{
