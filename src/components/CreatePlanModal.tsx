@@ -6,12 +6,13 @@ import type { TeamMember, Project } from '../types';
 interface CreatePlanModalProps {
   onCreated: (project: Project, memberIds: string[]) => void;
   onClose: () => void;
+  currentUserId?: string;
 }
 
 const getInitials = (name: string) =>
   name.split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 
-export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ onCreated, onClose }) => {
+export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ onCreated, onClose, currentUserId }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -68,7 +69,11 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({ onCreated, onC
 
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
-        .insert([{ name: name.trim(), status: 'Não iniciado' }])
+        .insert([{
+          name: name.trim(),
+          status: 'Não iniciado',
+          ...(currentUserId ? { owner_id: currentUserId } : {}),
+        }])
         .select()
         .single();
 

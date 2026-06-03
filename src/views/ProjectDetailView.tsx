@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '../supabase';
 import type { Project, TaskWithAssignees, TeamMember, Bucket } from '../types';
 import { TaskDetailsModal } from '../components/TaskDetailsModal';
+import { InviteModal } from '../components/InviteModal';
 
 interface ProjectDetailViewProps {
   projectId: string;
   onNavigateHome: () => void;
+  currentUser: User;
 }
 
 const formatDate = (dateStr: string | null) => {
@@ -63,7 +66,7 @@ const getPriorityTagStyle = (priority: string) => {
   }
 };
 
-export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId, onNavigateHome }) => {
+export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId, onNavigateHome, currentUser }) => {
   const [project, setProject] = useState<Project | null>(null);
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [tasks, setTasks] = useState<TaskWithAssignees[]>([]);
@@ -100,6 +103,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
   const [labelColor, setLabelColor] = useState(LABEL_COLORS[0]);
   const [labelSaveLoading, setLabelSaveLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('quadro');
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -400,6 +404,27 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
           </button>
           <span style={{ color: 'var(--text-secondary)', opacity: 0.5 }}>›</span>
           <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{project.name}</span>
+
+          <button
+            onClick={() => setShowInviteModal(true)}
+            style={{
+              marginLeft: 'auto',
+              background: 'none', border: '1px solid #DCDCDC',
+              borderRadius: '4px', padding: '0.3rem 0.75rem',
+              fontSize: '0.8rem', cursor: 'pointer',
+              color: 'var(--text-secondary)', fontFamily: 'Inter, sans-serif',
+              display: 'flex', alignItems: 'center', gap: '0.35rem',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#A38560'; e.currentTarget.style.color = '#A38560'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#DCDCDC'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            Compartilhar
+          </button>
         </div>
 
         <h1 style={{ fontSize: '2.2rem', marginBottom: '0.25rem' }}>{project.name}</h1>
@@ -897,10 +922,20 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
         <TaskDetailsModal
           taskId={selectedTaskId}
           teamMembers={teamMembers}
+          currentUserId={currentUser.id}
           onClose={() => {
             setSelectedTaskId(null);
             fetchTasks();
           }}
+        />
+      )}
+
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <InviteModal
+          project={project}
+          currentUserId={currentUser.id}
+          onClose={() => setShowInviteModal(false)}
         />
       )}
     </div>

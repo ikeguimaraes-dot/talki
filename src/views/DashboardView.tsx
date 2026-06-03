@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '../supabase';
 import type { ProjectWithMembers } from '../types';
 import { CreatePlanModal } from '../components/CreatePlanModal';
 
 interface DashboardViewProps {
   onSelectProject: (projectId: string) => void;
+  currentUser: User;
 }
 
 const PLAN_COLORS = [
@@ -27,7 +29,7 @@ const formatDate = (dateStr: string): string => {
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
 };
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectProject }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectProject, currentUser }) => {
   const [projects, setProjects] = useState<ProjectWithMembers[]>([]);
   const [taskCounts, setTaskCounts] = useState<Record<string, { total: number; completed: number }>>({});
   const [loading, setLoading] = useState(true);
@@ -53,7 +55,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectProject })
       setLoading(true);
       setError(null);
 
-      const { data, error: dbError } = await supabase
+      // Fetch project IDs where user is an accepted member
+      const { data: memberLinks } = await supabase
+        .from('project_members')
+        .select('project_id')
+        .eq('user_id', currentUser.id)
+        .eq('status', 'accepted');
+
+      const memberProjectIds: string[] = (memberLinks || []).map((m: any) => m.project_id);
+
+      let query = supabase
         .from('projects')
         .select(`
           *,
@@ -62,6 +73,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectProject })
           )
         `)
         .order('created_at', { ascending: false });
+
+      if (memberProjectIds.length > 0) {
+        query = query.or(`owner_id.eq.${currentUser.id},id.in.(${memberProjectIds.join(',')})`);
+      } else {
+        query = query.eq('owner_id', currentUser.id);
+      }
+
+      const { data, error: dbError } = await query;
 
       if (dbError) throw dbError;
 
@@ -528,6 +547,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectProject })
         <CreatePlanModal
           onCreated={handlePlanCreated}
           onClose={() => setShowCreateModal(false)}
+          currentUserId={currentUser.id}
         />
       )}
     </div>

@@ -17,9 +17,10 @@ export interface Project {
   name: string;
   description: string | null;
   status: string;
-  start_date: string | null; // Format: YYYY-MM-DD
-  end_date: string | null;   // Format: YYYY-MM-DD
+  start_date: string | null;
+  end_date: string | null;
   created_at: string;
+  owner_id: string | null;
 }
 
 export interface Task {
@@ -28,8 +29,8 @@ export interface Task {
   bucket_id: string;
   title: string;
   description: string | null;
-  start_date: string | null; // Format: YYYY-MM-DD
-  due_date: string | null;   // Format: YYYY-MM-DD
+  start_date: string | null;
+  due_date: string | null;
   status: 'Não iniciado' | 'Em andamento' | 'Concluído';
   priority: 'Baixa' | 'Média' | 'Alta' | 'Urgente';
   label_text: string | null;
@@ -60,4 +61,44 @@ export interface CommentWithMember extends Comment {
 
 export interface ProjectWithMembers extends Project {
   members: TeamMember[];
+}
+
+// Auth/multiuser types
+export interface Profile {
+  id: string;
+  name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  created_at: string;
+}
+
+export interface ProjectMember {
+  id: string;
+  project_id: string;
+  user_id: string;
+  role: 'owner' | 'member';
+  invited_by: string | null;
+  status: 'pending' | 'accepted';
+  created_at: string;
+}
+
+export interface ProjectInvite {
+  id: string;
+  project_id: string;
+  token: string;
+  created_by: string;
+  expires_at: string;
+  created_at: string;
+}
+
+export interface AppNotification {
+  id: string;
+  user_id: string;
+  type: 'task_assigned' | 'project_invite' | 'comment_added' | 'task_due_soon';
+  title: string;
+  body: string | null;
+  read: boolean;
+  project_id: string | null;
+  task_id: string | null;
+  created_at: string;
 }

@@ -12,9 +12,10 @@ interface TaskDetailsModalProps {
   taskId: string;
   teamMembers: TeamMember[];
   onClose: () => void;
+  currentUserId?: string;
 }
 
-export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({ taskId, teamMembers, onClose }) => {
+export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({ taskId, teamMembers, onClose, currentUserId }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const commentListRef = useRef<HTMLDivElement>(null);
 
@@ -235,6 +236,31 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({ taskId, team
           .insert(selectedAssignees.map(memberId => ({ task_id: taskId, member_id: memberId })));
 
         if (insertError) throw insertError;
+
+        // Notify newly added assignees (best-effort via profiles.email match)
+        if (task) {
+          const previousIds = task.assignees.map(a => a.id);
+          const newlyAddedIds = selectedAssignees.filter(id => !previousIds.includes(id));
+          if (newlyAddedIds.length > 0) {
+            const newMembers = teamMembers.filter(m => newlyAddedIds.includes(m.id));
+            for (const member of newMembers) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('email', member.email)
+                .maybeSingle();
+              if (profile && profile.id !== currentUserId) {
+                await supabase.from('notifications').insert({
+                  user_id: profile.id,
+                  type: 'task_assigned',
+                  title: 'Você foi atribuído a uma tarefa',
+                  body: title.trim(),
+                  task_id: taskId,
+                });
+              }
+            }
+          }
+        }
       }
 
       toast.success('Alterações salvas.');
