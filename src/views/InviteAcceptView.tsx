@@ -13,8 +13,13 @@ interface InviteData {
   id: string;
   project_id: string;
   expires_at: string;
-  project: { name: string } | null;
+  project: { name: string } | { name: string }[] | null;
 }
+
+const getProjectName = (project: InviteData['project']): string => {
+  if (!project) return '';
+  return Array.isArray(project) ? (project[0]?.name ?? '') : project.name;
+};
 
 export const InviteAcceptView: React.FC<InviteAcceptViewProps> = ({ token, user, onAccepted }) => {
   const [invite, setInvite] = useState<InviteData | null>(null);
@@ -77,7 +82,7 @@ export const InviteAcceptView: React.FC<InviteAcceptViewProps> = ({ token, user,
           .eq('user_id', user.id);
       }
 
-      toast.success(`Você entrou no projeto "${invite.project?.name}"!`);
+      toast.success(`Você entrou no projeto "${getProjectName(invite.project)}"!`);
       onAccepted();
     } catch (err: any) {
       console.error('Erro ao aceitar convite:', err);
@@ -136,7 +141,7 @@ export const InviteAcceptView: React.FC<InviteAcceptViewProps> = ({ token, user,
               marginBottom: '1.5rem',
               backgroundColor: '#F5F5F5', borderRadius: '4px', padding: '0.5rem 1rem',
             }}>
-              {invite.project?.name}
+              {getProjectName(invite.project)}
             </p>
 
             {!user ? (
