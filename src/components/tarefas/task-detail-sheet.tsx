@@ -92,14 +92,14 @@ export function TaskDetailSheet({ taskId, onOpenChange, board }: TaskDetailSheet
   return (
     <>
       <Sheet open={open} onOpenChange={next => !next && onOpenChange(false)}>
-        <SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-lg">
-          <SheetHeader className="gap-2 border-b border-border pr-11">
+        <SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-xl">
+          <SheetHeader className="gap-2 border-b border-border px-6 py-5 pr-12">
             <div className="flex items-start justify-between gap-2">
               <SheetTitle className="sr-only">Detalhe da tarefa</SheetTitle>
               <Input
                 value={titulo.value}
                 onChange={e => titulo.onChange(e.target.value)}
-                className="border-none px-0 text-lg font-medium shadow-none focus-visible:ring-0"
+                className="h-10 border-none bg-transparent px-0 text-xl font-semibold tracking-[-0.035em] shadow-none focus-visible:ring-0"
                 placeholder="Título da tarefa"
               />
               <DropdownMenu>
@@ -117,7 +117,7 @@ export function TaskDetailSheet({ taskId, onOpenChange, board }: TaskDetailSheet
             <SavedIndicator status={titulo.status === 'idle' ? descricao.status : titulo.status} />
           </SheetHeader>
 
-          <div className="space-y-5 px-4 py-4">
+          <div className="space-y-6 px-6 py-5">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <p className="text-xs font-medium text-muted-foreground">Bucket</p>

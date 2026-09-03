@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ListChecks, Plus } from 'lucide-react';
+import { ArrowUpRight, FolderKanban, Plus, Sparkles } from 'lucide-react';
 import { supabase } from '@/supabase';
 import { usePageHeader } from '@/hooks/use-page-header';
 import { useCurrentUser } from '@/hooks/use-current-user';
@@ -81,18 +81,32 @@ export function TarefasPage() {
     []
   );
 
-  usePageHeader({ title: 'Tarefas' }, headerActions);
+  usePageHeader({ title: 'Projetos' }, headerActions);
 
   return (
-    <div className="space-y-8">
-      <section className="flex gap-4">
-        <StatTile label="Atrasadas" value={counts.atrasadas} tone="destructive" />
-        <StatTile label="Hoje" value={counts.hoje} />
+    <div className="space-y-8 pb-6">
+      <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <p className="eyebrow mb-2 flex items-center gap-2"><Sparkles className="size-3 text-primary" /> Seu espaço de trabalho</p>
+          <h2 className="gradient-text text-[clamp(2rem,4vw,3.35rem)] font-semibold leading-[1.08] tracking-[-0.055em]">Projetos em movimento.</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Visão clara do que está acontecendo, do que precisa de atenção e do que já ganhou forma.</p>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <StatTile label="Pedem atenção" value={counts.atrasadas} tone="destructive" />
+        <StatTile label="Para hoje" value={counts.hoje} />
         <StatTile label="Próximos 7 dias" value={counts.proximos7Dias} />
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">Meus planos</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-semibold tracking-[-0.025em]">Seus projetos</h2>
+            <p className="mt-1 text-xs text-muted-foreground">Escolha um projeto para entrar no fluxo.</p>
+          </div>
+          <span className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex">{plans?.length ?? 0} ativos <ArrowUpRight className="size-3" /></span>
+        </div>
 
         {loading ? (
           <CardGridSkeleton />
@@ -100,13 +114,13 @@ export function TarefasPage() {
           <ErrorState message="Não foi possível carregar seus planos." onRetry={load} />
         ) : !plans || plans.length === 0 ? (
           <EmptyState
-            icon={ListChecks}
+            icon={FolderKanban}
             title="Nenhum plano ainda"
             description="Crie um plano pra começar a organizar as tarefas da sua equipe."
             action={<Button onClick={() => setDialogOpen(true)}><Plus /> Novo plano</Button>}
           />
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {plans.map(plan => (
               <PlanCard key={plan.id} plan={plan} />
             ))}

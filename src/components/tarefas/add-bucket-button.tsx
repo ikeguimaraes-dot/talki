@@ -24,7 +24,7 @@ export function AddBucketButton({ onCreate }: { onCreate: (nome: string) => void
 
   if (adding) {
     return (
-      <div className="w-72 shrink-0">
+      <div className="glass-soft w-[294px] shrink-0 rounded-[20px] p-3">
         <Input
           autoFocus
           value={nome}
@@ -34,7 +34,7 @@ export function AddBucketButton({ onCreate }: { onCreate: (nome: string) => void
             if (!nome.trim()) setAdding(false);
           }}
           placeholder="Nome do bucket"
-          className="h-9"
+          className="h-10 rounded-xl bg-background/50"
         />
       </div>
     );
@@ -43,7 +43,7 @@ export function AddBucketButton({ onCreate }: { onCreate: (nome: string) => void
   return (
     <button
       onClick={() => setAdding(true)}
-      className="flex h-9 w-72 shrink-0 items-center gap-1.5 rounded-md border border-dashed border-border px-3 text-sm text-muted-foreground transition-colors duration-150 hover:border-foreground/30 hover:text-foreground"
+      className="flex h-12 w-[294px] shrink-0 items-center justify-center gap-2 rounded-[16px] border border-dashed border-border bg-muted/20 px-3 text-xs font-medium text-muted-foreground transition-all duration-300 hover:border-primary/35 hover:bg-accent/60 hover:text-foreground"
     >
       <Plus className="size-3.5" /> Novo bucket
     </button>

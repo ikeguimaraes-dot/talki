@@ -1,19 +1,21 @@
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Menu, Search } from 'lucide-react';
+import { ChevronRight, Menu, Moon, Search, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePageHeaderContext } from '@/hooks/use-page-header';
 
 interface AppTopbarProps {
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
   onOpenMobileNav: () => void;
   onOpenCommandPalette: () => void;
 }
 
-export function AppTopbar({ onOpenMobileNav, onOpenCommandPalette }: AppTopbarProps) {
+export function AppTopbar({ theme, onToggleTheme, onOpenMobileNav, onOpenCommandPalette }: AppTopbarProps) {
   const { header, actions } = usePageHeaderContext();
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-4 sm:px-6">
+    <header className="glass-soft flex h-[62px] shrink-0 items-center gap-3 rounded-[18px] px-3 sm:px-5">
       <Button
         variant="ghost"
         size="icon"
@@ -37,21 +39,31 @@ export function AppTopbar({ onOpenMobileNav, onOpenCommandPalette }: AppTopbarPr
             <ChevronRight className="size-3.5 text-muted-foreground/50" />
           </Fragment>
         ))}
-        <h1 className="truncate font-heading text-xl font-semibold text-foreground">{header.title}</h1>
+        <h1 className="truncate font-heading text-[17px] font-semibold tracking-[-0.03em] text-foreground">{header.title}</h1>
       </div>
 
       <button
         onClick={onOpenCommandPalette}
-        className="hidden items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted sm:flex"
+        className="hidden h-9 items-center gap-2 rounded-xl border border-border bg-muted/60 px-3 text-sm text-muted-foreground transition-all duration-300 hover:border-primary/30 hover:bg-accent hover:text-foreground sm:flex"
       >
         <Search className="size-3.5" />
         Buscar
-        <kbd className="ml-2 rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium">
+        <kbd className="ml-3 rounded-md border border-border bg-background/60 px-1.5 py-0.5 text-[10px] font-medium">
           ⌘K
         </kbd>
       </button>
       <Button variant="ghost" size="icon" className="sm:hidden" onClick={onOpenCommandPalette} aria-label="Buscar">
         <Search />
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        className="rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground"
+        onClick={onToggleTheme}
+        aria-label={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
+      >
+        {theme === 'dark' ? <Sun className="size-[17px]" /> : <Moon className="size-[17px]" />}
       </Button>
 
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

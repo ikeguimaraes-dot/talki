@@ -11,9 +11,12 @@ import { MensagensPage } from '@/pages/mensagens-page';
 import { ComunicadosPage } from '@/pages/comunicados-page';
 
 const toasterStyle = {
-  background: '#1B1712',
-  border: '1px solid rgba(201, 161, 90, 0.3)',
-  color: '#EFE9DF',
+  background: 'rgba(20, 22, 32, 0.92)',
+  border: '1px solid rgba(255, 255, 255, 0.11)',
+  color: '#F4F5FB',
+  backdropFilter: 'blur(20px)',
+  borderRadius: '14px',
+  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.35)',
   fontFamily: 'Inter, sans-serif',
   fontSize: '0.85rem',
 };

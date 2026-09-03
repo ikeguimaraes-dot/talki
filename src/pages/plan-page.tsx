@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ListChecks } from 'lucide-react';
+import { BarChart3, CalendarDays, KanbanSquare, List, ListChecks, Sparkles } from 'lucide-react';
 import { usePageHeader } from '@/hooks/use-page-header';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { usePlanBoard } from '@/hooks/use-plan-board';
@@ -100,13 +100,24 @@ export function PlanPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 pb-4">
+      <section className="mb-7 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+        <div>
+          <p className="eyebrow mb-2 flex items-center gap-2"><Sparkles className="size-3 text-primary" /> Workspace ativo</p>
+          <h2 className="gradient-text text-[clamp(1.8rem,3.2vw,2.8rem)] font-semibold leading-[1.08] tracking-[-0.05em]">{plan.nome}</h2>
+          {plan.descricao && <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{plan.descricao}</p>}
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="neon-orb size-1.5 rounded-full bg-[#3ddcaa] text-[#3ddcaa]" /> Sincronizado agora
+        </div>
+      </section>
+
       <Tabs value={tab} onValueChange={v => setTab(v as ViewTab)}>
-        <TabsList>
-          <TabsTrigger value="quadro">Quadro</TabsTrigger>
-          <TabsTrigger value="lista">Lista</TabsTrigger>
-          <TabsTrigger value="graficos">Gráficos</TabsTrigger>
-          <TabsTrigger value="agenda">Agenda</TabsTrigger>
+        <TabsList className="h-10 rounded-xl border border-border bg-muted/55 p-1">
+          <TabsTrigger value="quadro" className="h-8 gap-2 rounded-lg px-3 text-xs data-active:bg-card"><KanbanSquare className="size-3.5" /> Quadro</TabsTrigger>
+          <TabsTrigger value="lista" className="h-8 gap-2 rounded-lg px-3 text-xs data-active:bg-card"><List className="size-3.5" /> Lista</TabsTrigger>
+          <TabsTrigger value="graficos" className="h-8 gap-2 rounded-lg px-3 text-xs data-active:bg-card"><BarChart3 className="size-3.5" /> Gráficos</TabsTrigger>
+          <TabsTrigger value="agenda" className="h-8 gap-2 rounded-lg px-3 text-xs data-active:bg-card"><CalendarDays className="size-3.5" /> Agenda</TabsTrigger>
         </TabsList>
       </Tabs>
 

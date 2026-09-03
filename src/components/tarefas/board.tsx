@@ -109,7 +109,7 @@ export function Board({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex gap-4 overflow-x-auto pb-5 pt-1 [scrollbar-gutter:stable]">
         {buckets.map(bucket => (
           <BucketColumn
             key={bucket.id}

@@ -28,8 +28,8 @@ export function TaskCard({ task, onToggleDone, onOpen, dragOverlay = false }: Ta
       {...listeners}
       onClick={() => onOpen?.(task.id)}
       className={cn(
-        'cursor-grab rounded-lg border border-border bg-card p-3 shadow-sm transition-shadow duration-150 hover:shadow-md active:cursor-grabbing',
-        dragOverlay && 'shadow-lg'
+        'premium-card group cursor-grab rounded-[15px] p-3.5 active:cursor-grabbing',
+        dragOverlay && 'rotate-2 shadow-2xl'
       )}
     >
       <TaskCardContent task={task} onToggleDone={onToggleDone} />
