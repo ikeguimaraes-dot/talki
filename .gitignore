@@ -1,6 +1,7 @@
 # Environment / credentials
 .env
 .env.*
+!.env.example
 
 # Logs
 logs
@@ -26,3 +27,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.vercel

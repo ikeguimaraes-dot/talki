@@ -1,5 +1,11 @@
 # React + TypeScript + Vite
 
+## Integração com Mattermost
+
+Defina `VITE_MATTERMOST_URL` no ambiente de build com a URL da instância ou de um canal específico. Se a variável não estiver disponível, a tela de Mensagens permite conectar uma URL por dispositivo.
+
+Para autorizar o embed, o administrador do Mattermost deve acessar **System Console → Integrations → Embedding** e incluir o domínio do Talki em **Frame ancestors**. O Mattermost bloqueia iframes por padrão; em produção, use apenas instâncias e domínios privados controlados pela organização.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
