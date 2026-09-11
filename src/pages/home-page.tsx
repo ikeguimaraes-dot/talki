@@ -7,7 +7,7 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { formatDateBR, isOverdue, isToday } from '@/lib/date';
+import { formatDateBR, isOverdue, isToday, todayIso } from '@/lib/date';
 
 interface DashboardTask {
   id: string;
@@ -16,7 +16,23 @@ interface DashboardTask {
   status: string;
   prioridade: string;
   plan_id: string;
+  concluidaEm: string | null;
   plans: { nome: string; cor: string } | null;
+  semResponsavel: boolean;
+}
+
+const FOCUS_LIMIT = 5;
+const PRIORITY_ORDER: Record<string, number> = { urgente: 0, importante: 1, media: 2, baixa: 3 };
+
+function compareFocusTasks(a: DashboardTask, b: DashboardTask): number {
+  const aOverdue = isOverdue(a.prazo, a.status);
+  const bOverdue = isOverdue(b.prazo, b.status);
+  if (aOverdue !== bOverdue) return aOverdue ? -1 : 1;
+
+  if (!!a.prazo !== !!b.prazo) return a.prazo ? -1 : 1;
+  if (a.prazo && b.prazo && a.prazo !== b.prazo) return a.prazo.localeCompare(b.prazo);
+
+  return (PRIORITY_ORDER[a.prioridade] ?? 4) - (PRIORITY_ORDER[b.prioridade] ?? 4);
 }
 
 const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -24,7 +40,7 @@ const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 export function HomePage() {
   const user = useCurrentUser();
   const firstName = (user.user_metadata?.name || user.email || 'você').split(' ')[0];
-  const [tasks, setTasks] = useState<DashboardTask[]>([]);
+  const [scopeTasks, setScopeTasks] = useState<DashboardTask[]>([]);
   const [loading, setLoading] = useState(true);
   const now = useMemo(() => new Date(), []);
 
@@ -32,34 +48,74 @@ export function HomePage() {
 
   useEffect(() => {
     let active = true;
-    supabase
-      .from('task_assignees')
-      .select('tasks!inner(id, titulo, prazo, status, prioridade, plan_id, plans(nome, cor))')
-      .eq('user_id', user.id)
-      .then(({ data }) => {
-        if (!active) return;
-        const rows = (data ?? [])
-          .map(row => row.tasks as unknown as DashboardTask)
-          .filter(task => task && task.status !== 'concluida')
-          .sort((a, b) => {
-            if (!a.prazo) return 1;
-            if (!b.prazo) return -1;
-            return a.prazo.localeCompare(b.prazo);
-          });
-        setTasks(rows);
-        setLoading(false);
-      });
+
+    async function load() {
+      const { data: assigneeData } = await supabase
+        .from('task_assignees')
+        .select('tasks!inner(id, titulo, prazo, status, prioridade, plan_id, concluida_em, plans(nome, cor))')
+        .eq('user_id', user.id);
+
+      const assignedTasks: DashboardTask[] = (assigneeData ?? [])
+        .map(row => row.tasks as unknown as { id: string; titulo: string; prazo: string | null; status: string; prioridade: string; plan_id: string; concluida_em: string | null; plans: { nome: string; cor: string } | null } | null)
+        .filter((task): task is { id: string; titulo: string; prazo: string | null; status: string; prioridade: string; plan_id: string; concluida_em: string | null; plans: { nome: string; cor: string } | null } => !!task)
+        .map(task => ({ ...task, concluidaEm: task.concluida_em, semResponsavel: false }));
+
+      const hasOpenAssigned = assignedTasks.some(task => task.status !== 'concluida');
+
+      if (hasOpenAssigned) {
+        if (active) setScopeTasks(assignedTasks);
+        if (active) setLoading(false);
+        return;
+      }
+
+      const { data: memberRows } = await supabase.from('plan_members').select('plan_id').eq('user_id', user.id);
+      const planIds = (memberRows ?? []).map(row => row.plan_id);
+
+      if (planIds.length === 0) {
+        if (active) setScopeTasks(assignedTasks);
+        if (active) setLoading(false);
+        return;
+      }
+
+      const { data: planTaskRows } = await supabase
+        .from('tasks')
+        .select('id, titulo, prazo, status, prioridade, plan_id, concluida_em, plans(nome, cor), task_assignees(user_id)')
+        .in('plan_id', planIds);
+
+      const fallbackTasks: DashboardTask[] = (planTaskRows ?? []).map(task => ({
+        id: task.id,
+        titulo: task.titulo,
+        prazo: task.prazo,
+        status: task.status,
+        prioridade: task.prioridade,
+        plan_id: task.plan_id,
+        concluidaEm: task.concluida_em,
+        plans: task.plans as unknown as { nome: string; cor: string } | null,
+        semResponsavel: (task.task_assignees ?? []).length === 0,
+      }));
+
+      if (active) setScopeTasks(fallbackTasks.length > 0 ? fallbackTasks : assignedTasks);
+      if (active) setLoading(false);
+    }
+
+    load();
     return () => { active = false; };
   }, [user.id]);
 
-  const dueToday = tasks.filter(task => isToday(task.prazo));
-  const overdue = tasks.filter(task => isOverdue(task.prazo, task.status));
-  const focusTasks = [...overdue, ...dueToday.filter(task => !overdue.some(item => item.id === task.id)), ...tasks]
-    .filter((task, index, all) => all.findIndex(item => item.id === task.id) === index)
-    .slice(0, 6);
+  const openTasks = useMemo(
+    () => scopeTasks.filter(task => task.status !== 'concluida').sort(compareFocusTasks),
+    [scopeTasks]
+  );
+  const dueToday = openTasks.filter(task => isToday(task.prazo));
+  const overdue = openTasks.filter(task => isOverdue(task.prazo, task.status));
+  const urgent = openTasks.filter(task => task.prioridade === 'urgente');
+  const concluidasHoje = scopeTasks.filter(task => task.status === 'concluida' && task.concluidaEm?.slice(0, 10) === todayIso());
+  const focusTasks = openTasks.slice(0, FOCUS_LIMIT);
+  const ritmoTotal = concluidasHoje.length + openTasks.length;
+  const ritmoProgresso = ritmoTotal > 0 ? Math.round((concluidasHoje.length / ritmoTotal) * 100) : 0;
 
   const toggleDone = async (task: DashboardTask, checked: boolean) => {
-    setTasks(current => current.filter(item => item.id !== task.id));
+    setScopeTasks(current => current.filter(item => item.id !== task.id));
     await supabase
       .from('tasks')
       .update({ status: checked ? 'concluida' : 'nao_iniciada', concluida_em: checked ? new Date().toISOString() : null })
@@ -92,7 +148,11 @@ export function HomePage() {
           <div className="relative flex items-start justify-between gap-4">
             <div>
               <p className="eyebrow">Ritmo do dia</p>
-              <p className="mt-3 text-3xl font-semibold tracking-[-0.05em]">{focusTasks.length} focos</p>
+              {ritmoTotal === 0 ? (
+                <p className="mt-3 text-3xl font-semibold tracking-[-0.05em]">Tudo em dia</p>
+              ) : (
+                <p className="mt-3 text-3xl font-semibold tracking-[-0.05em]">{concluidasHoje.length} de {ritmoTotal}</p>
+              )}
               <p className="mt-1 text-sm text-muted-foreground">{overdue.length > 0 ? `${overdue.length} pedem atenção primeiro` : 'Tudo sob controle por aqui'}</p>
             </div>
             <div className="flex size-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
@@ -103,7 +163,7 @@ export function HomePage() {
             {Array.from({ length: 12 }).map((_, index) => (
               <span
                 key={index}
-                className={cn('h-1.5 flex-1 rounded-full', index < Math.min(focusTasks.length + 3, 12) ? 'bg-gradient-to-r from-primary to-[#4b9cff]' : 'bg-muted')}
+                className={cn('h-1.5 flex-1 rounded-full', index < Math.round((ritmoProgresso / 100) * 12) ? 'bg-gradient-to-r from-primary to-[#4b9cff]' : 'bg-muted')}
               />
             ))}
           </div>
@@ -116,12 +176,20 @@ export function HomePage() {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3">
             <div>
+              <p className="text-2xl font-semibold tracking-[-0.05em]">{openTasks.length}</p>
+              <p className="mt-1 text-xs text-muted-foreground">em aberto</p>
+            </div>
+            <div>
               <p className="text-2xl font-semibold tracking-[-0.05em]">{dueToday.length}</p>
               <p className="mt-1 text-xs text-muted-foreground">para hoje</p>
             </div>
             <div>
               <p className={cn('text-2xl font-semibold tracking-[-0.05em]', overdue.length > 0 && 'text-destructive')}>{overdue.length}</p>
               <p className="mt-1 text-xs text-muted-foreground">atrasadas</p>
+            </div>
+            <div>
+              <p className={cn('text-2xl font-semibold tracking-[-0.05em]', urgent.length > 0 && 'text-destructive')}>{urgent.length}</p>
+              <p className="mt-1 text-xs text-muted-foreground">urgentes</p>
             </div>
           </div>
         </div>
@@ -168,6 +236,7 @@ export function HomePage() {
                     {task.prazo && <span className={cn('flex items-center gap-1', isOverdue(task.prazo, task.status) && 'text-destructive')}><Clock3 className="size-3" /> {formatDateBR(task.prazo)}</span>}
                   </div>
                 </div>
+                {task.semResponsavel && <span className="rounded-md bg-muted px-2 py-1 text-[10px] font-medium text-muted-foreground">Sem responsável</span>}
                 {task.prioridade === 'urgente' && <span className="rounded-md bg-destructive/10 px-2 py-1 text-[10px] font-semibold text-destructive">Urgente</span>}
                 <ArrowUpRight className="size-4 -translate-x-1 text-muted-foreground/0 transition-all group-hover:translate-x-0 group-hover:text-muted-foreground" />
               </Link>

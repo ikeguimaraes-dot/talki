@@ -11,13 +11,14 @@ import { Button } from '@/components/ui/button';
 import { StatTile } from '@/components/tarefas/stat-tile';
 import { PlanCard } from '@/components/tarefas/plan-card';
 import { CreatePlanDialog } from '@/components/tarefas/create-plan-dialog';
-import { isOverdue, isToday, isWithinNextDays } from '@/lib/date';
+import { isOverdue, isToday } from '@/lib/date';
 import type { PlanWithMembers } from '@/lib/types';
 
-interface AssignedCounts {
+interface TaskCounts {
+  emAberto: number;
+  paraHoje: number;
   atrasadas: number;
-  hoje: number;
-  proximos7Dias: number;
+  concluidas: number;
 }
 
 export function TarefasPage() {
@@ -25,7 +26,7 @@ export function TarefasPage() {
   const navigate = useNavigate();
 
   const [plans, setPlans] = useState<PlanWithMembers[] | null>(null);
-  const [counts, setCounts] = useState<AssignedCounts>({ atrasadas: 0, hoje: 0, proximos7Dias: 0 });
+  const [counts, setCounts] = useState<TaskCounts>({ emAberto: 0, paraHoje: 0, atrasadas: 0, concluidas: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -34,30 +35,24 @@ export function TarefasPage() {
     setLoading(true);
     setError(false);
     try {
-      const [plansRes, assignedRes] = await Promise.all([
-        supabase
-          .from('plans')
-          .select('*, plan_members(profiles(id, nome, email, avatar_url)), tasks(id, status)')
-          .order('criado_em', { ascending: false }),
-        supabase
-          .from('task_assignees')
-          .select('tasks!inner(prazo, status)')
-          .eq('user_id', user.id),
-      ]);
+      const { data, error: plansError } = await supabase
+        .from('plans')
+        .select('*, plan_members(profiles(id, nome, email, avatar_url)), tasks(id, status, prazo)')
+        .order('criado_em', { ascending: false });
 
-      if (plansRes.error) throw plansRes.error;
-      if (assignedRes.error) throw assignedRes.error;
+      if (plansError) throw plansError;
 
-      setPlans(plansRes.data as unknown as PlanWithMembers[]);
+      const typedPlans = data as unknown as PlanWithMembers[];
+      setPlans(typedPlans);
 
-      const abertas = assignedRes.data
-        .map(row => row.tasks)
-        .filter((t): t is { prazo: string | null; status: string } => !!t && t.status !== 'concluida');
+      const allTasks = typedPlans.flatMap(plan => plan.tasks);
+      const abertas = allTasks.filter(t => t.status !== 'concluida');
 
       setCounts({
+        emAberto: abertas.length,
+        paraHoje: abertas.filter(t => isToday(t.prazo)).length,
         atrasadas: abertas.filter(t => isOverdue(t.prazo, t.status)).length,
-        hoje: abertas.filter(t => isToday(t.prazo)).length,
-        proximos7Dias: abertas.filter(t => isWithinNextDays(t.prazo, 7)).length,
+        concluidas: allTasks.filter(t => t.status === 'concluida').length,
       });
     } catch (err) {
       console.error('Erro ao carregar planos:', err);
@@ -65,7 +60,7 @@ export function TarefasPage() {
     } finally {
       setLoading(false);
     }
-  }, [user.id]);
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount, load() manages its own loading flag
@@ -93,10 +88,11 @@ export function TarefasPage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <StatTile label="Pedem atenção" value={counts.atrasadas} tone="destructive" />
-        <StatTile label="Para hoje" value={counts.hoje} />
-        <StatTile label="Próximos 7 dias" value={counts.proximos7Dias} />
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <StatTile label="Em aberto" value={counts.emAberto} />
+        <StatTile label="Para hoje" value={counts.paraHoje} />
+        <StatTile label="Atrasadas" value={counts.atrasadas} tone="destructive" />
+        <StatTile label="Concluídas" value={counts.concluidas} />
       </section>
 
       <section className="space-y-4">

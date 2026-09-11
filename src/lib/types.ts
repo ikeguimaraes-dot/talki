@@ -57,7 +57,7 @@ export interface BucketWithTasks extends Bucket {
 
 export interface PlanWithMembers extends Plan {
   plan_members: { profiles: AssigneeProfile }[];
-  tasks: { id: string; status: string }[];
+  tasks: { id: string; status: string; prazo: string | null }[];
 }
 
 export interface TaskCommentWithProfile extends TaskComment {
