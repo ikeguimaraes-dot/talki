@@ -68,21 +68,13 @@ export function HomePage() {
         return;
       }
 
-      const { data: memberRows } = await supabase.from('plan_members').select('plan_id').eq('user_id', user.id);
-      const planIds = (memberRows ?? []).map(row => row.plan_id);
-
-      if (planIds.length === 0) {
-        if (active) setScopeTasks(assignedTasks);
-        if (active) setLoading(false);
-        return;
-      }
-
-      const { data: planTaskRows } = await supabase
+      // Sem filtro de plan_id aqui de propósito: a RLS de tasks (is_plan_member)
+      // já restringe o resultado aos projetos dos quais o usuário é membro.
+      const { data: memberTaskRows } = await supabase
         .from('tasks')
-        .select('id, titulo, prazo, status, prioridade, plan_id, concluida_em, plans(nome, cor), task_assignees(user_id)')
-        .in('plan_id', planIds);
+        .select('id, titulo, prazo, status, prioridade, plan_id, concluida_em, plans(nome, cor), task_assignees(user_id)');
 
-      const fallbackTasks: DashboardTask[] = (planTaskRows ?? []).map(task => ({
+      const fallbackTasks: DashboardTask[] = (memberTaskRows ?? []).map(task => ({
         id: task.id,
         titulo: task.titulo,
         prazo: task.prazo,
