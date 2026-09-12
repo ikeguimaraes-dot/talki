@@ -5,17 +5,18 @@ import { MoreHorizontal, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { TaskCard } from '@/components/tarefas/task-card';
-import type { BucketWithTasks } from '@/lib/types';
+import type { BucketWithTasks, TarefaCor } from '@/lib/types';
 
 interface BucketColumnProps {
   bucket: BucketWithTasks;
   onRename: (bucketId: string, nome: string) => void;
   onCreateTask: (bucketId: string, titulo: string) => void;
   onToggleDone: (taskId: string, done: boolean) => void;
+  onChangeColor: (taskId: string, cor: TarefaCor | null) => void;
   onOpenTask: (taskId: string) => void;
 }
 
-export function BucketColumn({ bucket, onRename, onCreateTask, onToggleDone, onOpenTask }: BucketColumnProps) {
+export function BucketColumn({ bucket, onRename, onCreateTask, onToggleDone, onChangeColor, onOpenTask }: BucketColumnProps) {
   const { setNodeRef } = useDroppable({ id: bucket.id });
 
   const [editingName, setEditingName] = useState(false);
@@ -91,7 +92,7 @@ export function BucketColumn({ bucket, onRename, onCreateTask, onToggleDone, onO
       <SortableContext items={bucket.tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
         <div ref={setNodeRef} className="flex min-h-16 flex-col gap-2">
           {bucket.tasks.map(task => (
-            <TaskCard key={task.id} task={task} onToggleDone={onToggleDone} onOpen={onOpenTask} />
+            <TaskCard key={task.id} task={task} onToggleDone={onToggleDone} onChangeColor={onChangeColor} onOpen={onOpenTask} />
           ))}
         </div>
       </SortableContext>

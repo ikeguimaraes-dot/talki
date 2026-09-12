@@ -38,6 +38,33 @@ export const STATUS_LABEL: Record<StatusTarefa, string> = {
   concluida: 'Concluída',
 };
 
+export type TarefaCor = 'violeta' | 'azul' | 'verde' | 'ambar' | 'vermelho' | 'rosa' | 'cinza';
+
+export const CORES_TAREFA: TarefaCor[] = ['violeta', 'azul', 'verde', 'ambar', 'vermelho', 'rosa', 'cinza'];
+
+// Nenhuma cor nova no CSS: reaproveita as variables --chart-*/--destructive/
+// --muted-foreground que já existem no tema, pra "cor da tarefa" nunca sair
+// de sincronia com o design system (skill dataviz).
+export const COR_TAREFA_VAR: Record<TarefaCor, string> = {
+  violeta: 'var(--chart-1)',
+  azul: 'var(--chart-3)',
+  verde: 'var(--chart-2)',
+  ambar: 'var(--chart-4)',
+  vermelho: 'var(--destructive)',
+  rosa: 'var(--chart-5)',
+  cinza: 'var(--muted-foreground)',
+};
+
+export const COR_TAREFA_LABEL: Record<TarefaCor, string> = {
+  violeta: 'Violeta',
+  azul: 'Azul',
+  verde: 'Verde',
+  ambar: 'Âmbar',
+  vermelho: 'Vermelho',
+  rosa: 'Rosa',
+  cinza: 'Cinza',
+};
+
 export interface AssigneeProfile {
   id: string;
   nome: string | null;

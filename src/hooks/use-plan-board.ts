@@ -4,14 +4,14 @@ import { supabase } from '@/supabase';
 import type { AssigneeProfile, BucketWithTasks, ChecklistItem, PlanWithMembers, Task, TaskLabel, TaskWithRelations } from '@/lib/types';
 
 const TASK_SELECT = `
-  id, plan_id, bucket_id, titulo, descricao, prioridade, status, prazo, inicio, ordem, criado_por, criado_em, concluida_em,
+  id, plan_id, bucket_id, titulo, descricao, prioridade, status, prazo, inicio, ordem, cor, criado_por, criado_em, concluida_em,
   task_assignees(profiles(id, nome, email, avatar_url, cargo)),
   task_checklist(id, task_id, texto, feito, ordem),
   task_label_links(task_labels(id, nome, cor, plan_id))
 `;
 
 type TaskFieldsPatch = Partial<
-  Pick<Task, 'titulo' | 'descricao' | 'status' | 'prioridade' | 'inicio' | 'prazo' | 'concluida_em' | 'ordem'>
+  Pick<Task, 'titulo' | 'descricao' | 'status' | 'prioridade' | 'inicio' | 'prazo' | 'concluida_em' | 'ordem' | 'cor'>
 >;
 
 export function usePlanBoard(planId: string) {

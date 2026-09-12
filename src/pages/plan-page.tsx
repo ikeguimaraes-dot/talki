@@ -188,13 +188,14 @@ export function PlanPage() {
               onCreateBucket={createBucket}
               onCreateTask={(bucketId, titulo) => createTask(bucketId, titulo, user.id)}
               onToggleDone={toggleTaskDone}
+              onChangeColor={(taskId, cor) => updateTaskFields(taskId, { cor })}
               onOpenTask={openTask}
               onPersistOrder={persistTasksOrder}
             />
           ) : staticGroups.length === 0 ? (
             <EmptyState icon={ListChecks} title="Nenhuma tarefa encontrada" description="Ajuste os filtros ou o agrupamento." />
           ) : (
-            <GroupedColumns groups={staticGroups} onToggleDone={toggleTaskDone} onOpenTask={openTask} />
+            <GroupedColumns groups={staticGroups} onToggleDone={toggleTaskDone} onChangeColor={(taskId, cor) => updateTaskFields(taskId, { cor })} onOpenTask={openTask} />
           )}
         </>
       )}

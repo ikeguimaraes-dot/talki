@@ -25,3 +25,33 @@ export function formatDateBR(dateIso: string | null): string {
   const [year, month, day] = dateIso.split('-');
   return `${day}/${month}/${year}`;
 }
+
+const MESES_ABREV = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+function parseIsoDate(dateIso: string): { day: number; month: number; year: number } {
+  const [year, month, day] = dateIso.split('-').map(Number);
+  return { day, month: month - 1, year };
+}
+
+export function formatDateRangeBR(inicio: string | null, prazo: string | null): string {
+  if (!inicio && !prazo) return '';
+  if (!inicio && prazo) {
+    const p = parseIsoDate(prazo);
+    return `até ${p.day} ${MESES_ABREV[p.month]}`;
+  }
+  if (inicio && !prazo) {
+    const i = parseIsoDate(inicio);
+    return `desde ${i.day} ${MESES_ABREV[i.month]}`;
+  }
+
+  const i = parseIsoDate(inicio as string);
+  const p = parseIsoDate(prazo as string);
+
+  if (i.year !== p.year) {
+    return `${i.day} ${MESES_ABREV[i.month]} ${i.year} – ${p.day} ${MESES_ABREV[p.month]} ${p.year}`;
+  }
+  if (i.month !== p.month) {
+    return `${i.day} ${MESES_ABREV[i.month]} – ${p.day} ${MESES_ABREV[p.month]}`;
+  }
+  return `${i.day} – ${p.day} ${MESES_ABREV[p.month]}`;
+}

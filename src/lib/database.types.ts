@@ -145,6 +145,7 @@ export type Database = {
         Row: {
           bucket_id: string
           concluida_em: string | null
+          cor: string | null
           criado_em: string
           criado_por: string
           descricao: string | null
@@ -160,6 +161,7 @@ export type Database = {
         Insert: {
           bucket_id: string
           concluida_em?: string | null
+          cor?: string | null
           criado_em?: string
           criado_por: string
           descricao?: string | null
@@ -175,6 +177,7 @@ export type Database = {
         Update: {
           bucket_id?: string
           concluida_em?: string | null
+          cor?: string | null
           criado_em?: string
           criado_por?: string
           descricao?: string | null

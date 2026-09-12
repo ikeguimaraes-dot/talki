@@ -14,7 +14,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { BucketColumn } from '@/components/tarefas/bucket-column';
 import { AddBucketButton } from '@/components/tarefas/add-bucket-button';
 import { TaskCard } from '@/components/tarefas/task-card';
-import type { BucketWithTasks, TaskWithRelations } from '@/lib/types';
+import type { BucketWithTasks, TarefaCor, TaskWithRelations } from '@/lib/types';
 
 interface BoardProps {
   buckets: BucketWithTasks[];
@@ -23,6 +23,7 @@ interface BoardProps {
   onCreateBucket: (nome: string) => void;
   onCreateTask: (bucketId: string, titulo: string) => void;
   onToggleDone: (taskId: string, done: boolean) => void;
+  onChangeColor: (taskId: string, cor: TarefaCor | null) => void;
   onOpenTask: (taskId: string) => void;
   onPersistOrder: (affectedBucketIds: string[]) => void;
 }
@@ -34,6 +35,7 @@ export function Board({
   onCreateBucket,
   onCreateTask,
   onToggleDone,
+  onChangeColor,
   onOpenTask,
   onPersistOrder,
 }: BoardProps) {
@@ -117,6 +119,7 @@ export function Board({
             onRename={onRenameBucket}
             onCreateTask={onCreateTask}
             onToggleDone={onToggleDone}
+            onChangeColor={onChangeColor}
             onOpenTask={onOpenTask}
           />
         ))}

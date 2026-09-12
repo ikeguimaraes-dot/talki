@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Copy, FolderInput, Trash2, MoreHorizontal } from 'lucide-react';
+import { Check, Copy, FolderInput, Trash2, MoreHorizontal } from 'lucide-react';
 import { supabase } from '@/supabase';
+import { cn } from '@/lib/utils';
 import type { usePlanBoard } from '@/hooks/use-plan-board';
 import { useAutosaveField } from '@/hooks/use-autosave-field';
 import { useCurrentUser } from '@/hooks/use-current-user';
@@ -28,7 +29,7 @@ import { LabelPicker } from '@/components/tarefas/label-picker';
 import { ChecklistSection } from '@/components/tarefas/checklist-section';
 import { CommentsSection } from '@/components/tarefas/comments-section';
 import { MoveToPlanDialog } from '@/components/tarefas/move-to-plan-dialog';
-import { PRIORIDADE_LABEL, PRIORIDADES, STATUS_LABEL, STATUS_TAREFA, type TaskCommentWithProfile } from '@/lib/types';
+import { CORES_TAREFA, COR_TAREFA_LABEL, COR_TAREFA_VAR, PRIORIDADE_LABEL, PRIORIDADES, STATUS_LABEL, STATUS_TAREFA, type TaskCommentWithProfile } from '@/lib/types';
 import { formatDateBR } from '@/lib/date';
 
 interface TaskDetailSheetProps {
@@ -169,6 +170,36 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
 
               <DateField label="Início" value={task.inicio} onChange={v => board.updateTaskFields(task.id, { inicio: v })} />
               <DateField label="Prazo" value={task.prazo} onChange={v => board.updateTaskFields(task.id, { prazo: v })} />
+            </div>
+
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">Cor</p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => board.updateTaskFields(task.id, { cor: null })}
+                  className={cn(
+                    'flex size-7 items-center justify-center rounded-full border border-dashed border-muted-foreground/50 ring-offset-2 ring-offset-background transition-all',
+                    !task.cor && 'ring-2 ring-foreground'
+                  )}
+                  aria-label="Sem cor"
+                >
+                  {!task.cor && <Check className="size-3.5 text-muted-foreground" />}
+                </button>
+                {CORES_TAREFA.map(cor => (
+                  <button
+                    key={cor}
+                    type="button"
+                    onClick={() => board.updateTaskFields(task.id, { cor })}
+                    className={cn(
+                      'size-7 rounded-full ring-offset-2 ring-offset-background transition-all',
+                      task.cor === cor && 'ring-2 ring-foreground'
+                    )}
+                    style={{ backgroundColor: COR_TAREFA_VAR[cor] }}
+                    aria-label={COR_TAREFA_LABEL[cor]}
+                  />
+                ))}
+              </div>
             </div>
 
             <AssigneePicker

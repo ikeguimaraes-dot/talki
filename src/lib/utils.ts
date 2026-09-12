@@ -14,3 +14,18 @@ export function getInitials(displayName: string): string {
     .join('')
     .toUpperCase()
 }
+
+export function stripMarkdown(text: string): string {
+  return text
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/(\*\*|__)(.*?)\1/g, '$2')
+    .replace(/(\*|_)(.*?)\1/g, '$2')
+    .replace(/~~(.*?)~~/g, '$1')
+    .replace(/`{1,3}([^`]*)`{1,3}/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^>\s?/gm, '')
+    .replace(/^[-*+]\s+/gm, '')
+    .replace(/\n+/g, ' ')
+    .trim()
+}
