@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/supabase';
-import type { BucketWithTasks, ChecklistItem, PlanWithMembers, Task, TaskLabel, TaskWithRelations } from '@/lib/types';
+import type { AssigneeProfile, BucketWithTasks, ChecklistItem, PlanWithMembers, Task, TaskLabel, TaskWithRelations } from '@/lib/types';
 
 const TASK_SELECT = `
   id, plan_id, bucket_id, titulo, descricao, prioridade, status, prazo, inicio, ordem, criado_por, criado_em, concluida_em,
-  task_assignees(profiles(id, nome, email, avatar_url)),
+  task_assignees(profiles(id, nome, email, avatar_url, cargo)),
   task_checklist(id, task_id, texto, feito, ordem),
   task_label_links(task_labels(id, nome, cor, plan_id))
 `;
@@ -28,7 +28,7 @@ export function usePlanBoard(planId: string) {
       const [planRes, bucketsRes, labelsRes] = await Promise.all([
         supabase
           .from('plans')
-          .select('*, plan_members(profiles(id, nome, email, avatar_url)), tasks(id, status)')
+          .select('*, plan_members(profiles(id, nome, email, avatar_url, cargo)), tasks(id, status)')
           .eq('id', planId)
           .single(),
         supabase
@@ -171,6 +171,51 @@ export function usePlanBoard(planId: string) {
       if (insertError) toast.error('Não foi possível atualizar os responsáveis.');
     }
   }, [plan, updateTaskInState]);
+
+  const addPlanMember = useCallback(async (profile: AssigneeProfile) => {
+    const { error: insertError } = await supabase
+      .from('plan_members')
+      .insert({ plan_id: planId, user_id: profile.id });
+
+    if (insertError) {
+      toast.error('Não foi possível adicionar o membro.');
+      return false;
+    }
+
+    setPlan(prev => (prev ? { ...prev, plan_members: [...prev.plan_members, { profiles: profile }] } : prev));
+    return true;
+  }, [planId]);
+
+  const removePlanMember = useCallback(async (userId: string, unassignTasks: boolean) => {
+    const { error: deleteError } = await supabase
+      .from('plan_members')
+      .delete()
+      .eq('plan_id', planId)
+      .eq('user_id', userId);
+
+    if (deleteError) {
+      toast.error('Não foi possível remover o membro.');
+      return false;
+    }
+
+    if (unassignTasks) {
+      const affectedTaskIds = buckets.flatMap(b => b.tasks).filter(t => t.task_assignees.some(a => a.profiles.id === userId)).map(t => t.id);
+      if (affectedTaskIds.length > 0) {
+        await supabase.from('task_assignees').delete().eq('user_id', userId).in('task_id', affectedTaskIds);
+        setBuckets(prev => prev.map(b => ({
+          ...b,
+          tasks: b.tasks.map(t => (
+            affectedTaskIds.includes(t.id)
+              ? { ...t, task_assignees: t.task_assignees.filter(a => a.profiles.id !== userId) }
+              : t
+          )),
+        })));
+      }
+    }
+
+    setPlan(prev => (prev ? { ...prev, plan_members: prev.plan_members.filter(m => m.profiles.id !== userId) } : prev));
+    return true;
+  }, [planId, buckets]);
 
   const setTaskLabels = useCallback(async (taskId: string, labelIds: string[]) => {
     const resolved = labelIds
@@ -320,6 +365,15 @@ export function usePlanBoard(planId: string) {
     if (deleteError) toast.error('Não foi possível excluir a tarefa.');
   }, [findTask]);
 
+  const deletePlan = useCallback(async () => {
+    const { error: deleteError } = await supabase.from('plans').delete().eq('id', planId);
+    if (deleteError) {
+      toast.error('Não foi possível excluir o projeto.');
+      return false;
+    }
+    return true;
+  }, [planId]);
+
   return {
     plan,
     buckets,
@@ -337,6 +391,8 @@ export function usePlanBoard(planId: string) {
     updateTaskFields,
     moveTaskToBucket,
     setTaskAssignees,
+    addPlanMember,
+    removePlanMember,
     setTaskLabels,
     createLabel,
     addChecklistItem,
@@ -346,5 +402,6 @@ export function usePlanBoard(planId: string) {
     duplicateTask,
     moveTaskToPlan,
     deleteTask,
+    deletePlan,
   };
 }

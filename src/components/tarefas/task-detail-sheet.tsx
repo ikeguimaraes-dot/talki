@@ -35,9 +35,11 @@ interface TaskDetailSheetProps {
   taskId: string | null;
   onOpenChange: (open: boolean) => void;
   board: ReturnType<typeof usePlanBoard>;
+  isAdmin: boolean;
+  onManageMembers: () => void;
 }
 
-export function TaskDetailSheet({ taskId, onOpenChange, board }: TaskDetailSheetProps) {
+export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManageMembers }: TaskDetailSheetProps) {
   const currentUser = useCurrentUser();
   const task = taskId ? board.findTask(taskId) : undefined;
   const open = !!taskId && !!task;
@@ -61,7 +63,9 @@ export function TaskDetailSheet({ taskId, onOpenChange, board }: TaskDetailSheet
 
   if (!task) return null;
 
-  const criador = board.plan?.plan_members.find(m => m.profiles.id === task.criado_por)?.profiles;
+  const members = board.plan?.plan_members.map(m => m.profiles) ?? [];
+  const criador = members.find(p => p.id === task.criado_por);
+  const canManageAssignees = isAdmin || board.plan?.criado_por === currentUser.id || task.criado_por === currentUser.id;
 
   const handleDuplicate = async () => {
     const copy = await board.duplicateTask(task.id);
@@ -168,9 +172,11 @@ export function TaskDetailSheet({ taskId, onOpenChange, board }: TaskDetailSheet
             </div>
 
             <AssigneePicker
-              members={board.plan?.plan_members.map(m => m.profiles) ?? []}
+              members={members}
               selected={task.task_assignees.map(a => a.profiles)}
               onChange={userIds => board.setTaskAssignees(task.id, userIds)}
+              canManage={canManageAssignees}
+              onManageMembers={onManageMembers}
             />
 
             <LabelPicker

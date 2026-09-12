@@ -74,7 +74,7 @@ export function CreatePlanDialog({ open, onOpenChange, currentUserId, onCreated 
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Novo plano</DialogTitle>
-            <DialogDescription>Crie um plano para organizar tarefas e convidar sua equipe.</DialogDescription>
+            <DialogDescription>Crie um plano para organizar as tarefas da equipe.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">

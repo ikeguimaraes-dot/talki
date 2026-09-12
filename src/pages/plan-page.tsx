@@ -1,14 +1,27 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { BarChart3, CalendarDays, KanbanSquare, List, ListChecks, Sparkles } from 'lucide-react';
+import { BarChart3, CalendarDays, KanbanSquare, List, ListChecks, MoreHorizontal, Sparkles, Trash2, Users } from 'lucide-react';
 import { usePageHeader } from '@/hooks/use-page-header';
 import { useCurrentUser } from '@/hooks/use-current-user';
+import { useIsAdmin } from '@/hooks/use-is-admin';
 import { usePlanBoard } from '@/hooks/use-plan-board';
 import { EmptyState } from '@/components/state/empty-state';
 import { ErrorState } from '@/components/state/error-state';
 import { ListSkeleton } from '@/components/state/page-skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Board } from '@/components/tarefas/board';
 import { BoardToolbar } from '@/components/tarefas/board-toolbar';
 import { GroupedColumns } from '@/components/tarefas/grouped-columns';
@@ -16,6 +29,7 @@ import { ListaView } from '@/components/tarefas/lista-view';
 import { GraficosView } from '@/components/tarefas/graficos-view';
 import { AgendaView } from '@/components/tarefas/agenda-view';
 import { TaskDetailSheet } from '@/components/tarefas/task-detail-sheet';
+import { ManagePlanMembersDialog } from '@/components/tarefas/manage-plan-members-dialog';
 import { FILTROS_VAZIOS, groupTasks, groupTasksByBucket, hasActiveFilters, taskMatchesFilters, type BoardFilters, type GroupBy } from '@/lib/board-filters';
 import type { TaskLabel } from '@/lib/types';
 
@@ -29,13 +43,18 @@ function isTypingTarget(el: EventTarget | null): boolean {
 export function PlanPage() {
   const { planId } = useParams<{ planId: string }>();
   const user = useCurrentUser();
+  const navigate = useNavigate();
+  const isAdmin = useIsAdmin();
   const [searchParams, setSearchParams] = useSearchParams();
   const board = usePlanBoard(planId!);
-  const { plan, buckets, setBuckets, loading, error, reload, createBucket, renameBucket, createTask, toggleTaskDone, persistTasksOrder, updateTaskFields } = board;
+  const { plan, buckets, setBuckets, loading, error, reload, createBucket, renameBucket, createTask, toggleTaskDone, persistTasksOrder, updateTaskFields, addPlanMember, removePlanMember, deletePlan } = board;
 
   const [tab, setTab] = useState<ViewTab>('quadro');
   const [groupBy, setGroupBy] = useState<GroupBy>('bucket');
   const [filters, setFilters] = useState<BoardFilters>(FILTROS_VAZIOS);
+  const [membersOpen, setMembersOpen] = useState(false);
+  const [deletePlanOpen, setDeletePlanOpen] = useState(false);
+  const [deletingPlan, setDeletingPlan] = useState(false);
 
   const openTaskId = searchParams.get('tarefa');
   const openTask = (taskId: string) => setSearchParams(prev => { const next = new URLSearchParams(prev); next.set('tarefa', taskId); return next; });
@@ -99,6 +118,18 @@ export function PlanPage() {
     return <ErrorState message="Não foi possível carregar este plano." onRetry={reload} />;
   }
 
+  const canManagePlan = isAdmin || plan.criado_por === user.id;
+
+  const handleDeletePlan = async () => {
+    setDeletingPlan(true);
+    const ok = await deletePlan();
+    setDeletingPlan(false);
+    if (ok) {
+      toast.success('Projeto excluído.');
+      navigate('/tarefas', { replace: true });
+    }
+  };
+
   return (
     <div className="space-y-5 pb-4">
       <section className="mb-7 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
@@ -107,8 +138,25 @@ export function PlanPage() {
           <h2 className="gradient-text text-[clamp(1.8rem,3.2vw,2.8rem)] font-semibold leading-[1.08] tracking-[-0.05em]">{plan.nome}</h2>
           {plan.descricao && <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{plan.descricao}</p>}
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="neon-orb size-1.5 rounded-full bg-[#3ddcaa] text-[#3ddcaa]" /> Sincronizado agora
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="neon-orb size-1.5 rounded-full bg-[#3ddcaa] text-[#3ddcaa]" /> Sincronizado agora
+          </span>
+          {canManagePlan && (
+            <>
+              <Button variant="outline" size="sm" onClick={() => setMembersOpen(true)}>
+                <Users /> Membros
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon-sm" aria-label="Mais ações do projeto"><MoreHorizontal /></Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem variant="destructive" onClick={() => setDeletePlanOpen(true)}><Trash2 /> Excluir projeto</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
         </div>
       </section>
 
@@ -169,7 +217,35 @@ export function PlanPage() {
         />
       )}
 
-      <TaskDetailSheet taskId={openTaskId} onOpenChange={open => !open && closeTask()} board={board} />
+      <TaskDetailSheet
+        taskId={openTaskId}
+        onOpenChange={open => !open && closeTask()}
+        board={board}
+        isAdmin={isAdmin}
+        onManageMembers={() => setMembersOpen(true)}
+      />
+
+      <ManagePlanMembersDialog
+        open={membersOpen}
+        onOpenChange={setMembersOpen}
+        plan={plan}
+        buckets={buckets}
+        onAddMember={addPlanMember}
+        onRemoveMember={removePlanMember}
+      />
+
+      <AlertDialog open={deletePlanOpen} onOpenChange={setDeletePlanOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir "{plan.nome}"?</AlertDialogTitle>
+            <AlertDialogDescription>Essa ação não pode ser desfeita. Todas as tarefas, buckets e comentários deste projeto serão perdidos.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingPlan}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction disabled={deletingPlan} onClick={handleDeletePlan}>Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

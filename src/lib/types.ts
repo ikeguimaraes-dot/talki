@@ -43,6 +43,7 @@ export interface AssigneeProfile {
   nome: string | null;
   email: string | null;
   avatar_url: string | null;
+  cargo: string | null;
 }
 
 export interface TaskWithRelations extends Task {
