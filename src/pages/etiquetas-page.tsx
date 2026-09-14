@@ -88,7 +88,7 @@ export function EtiquetasPage() {
 
       const { data } = await supabase
         .from('tasks')
-        .select('id, titulo, plan_id, prazo, status, plans(nome), task_label_links(task_labels(id, nome, cor)), task_assignees(profiles(id, nome, email, avatar_url, cargo))')
+        .select('id, titulo, plan_id, prazo, status, plans(nome), task_label_links(task_labels(id, nome, cor)), task_assignees(profiles!task_assignees_user_id_fkey(id, nome, email, avatar_url, cargo))')
         .in('id', taskIds)
         .order('prazo', { ascending: true, nullsFirst: false });
 

@@ -5,7 +5,7 @@ import type { AssigneeProfile, BucketWithTasks, ChecklistItem, PlanWithMembers, 
 
 const TASK_SELECT = `
   id, plan_id, bucket_id, titulo, descricao, prioridade, status, prazo, inicio, ordem, cor, criado_por, criado_em, concluida_em,
-  task_assignees(profiles(id, nome, email, avatar_url, cargo)),
+  task_assignees(profiles!task_assignees_user_id_fkey(id, nome, email, avatar_url, cargo)),
   task_checklist(id, task_id, texto, feito, ordem),
   task_label_links(task_labels(id, nome, cor, plan_id))
 `;
