@@ -161,16 +161,27 @@ export function usePlanBoard(planId: string) {
       .map(id => memberProfiles.find(p => p.id === id))
       .filter((p): p is NonNullable<typeof p> => !!p);
 
+    // Diff em vez de delete-all+insert-all: reinserir quem já era
+    // responsável dispararia de novo o trigger de e-mail de atribuição
+    // (AFTER INSERT), reenviando notificação pra quem não mudou.
+    const currentIds = findTask(taskId)?.task_assignees.map(a => a.profiles.id) ?? [];
+    const currentSet = new Set(currentIds);
+    const nextSet = new Set(userIds);
+    const toRemove = currentIds.filter(id => !nextSet.has(id));
+    const toAdd = userIds.filter(id => !currentSet.has(id));
+
     updateTaskInState(taskId, { task_assignees: resolved.map(profiles => ({ profiles })) });
 
-    await supabase.from('task_assignees').delete().eq('task_id', taskId);
-    if (userIds.length > 0) {
+    if (toRemove.length > 0) {
+      await supabase.from('task_assignees').delete().eq('task_id', taskId).in('user_id', toRemove);
+    }
+    if (toAdd.length > 0) {
       const { error: insertError } = await supabase
         .from('task_assignees')
-        .insert(userIds.map(user_id => ({ task_id: taskId, user_id })));
+        .insert(toAdd.map(user_id => ({ task_id: taskId, user_id })));
       if (insertError) toast.error('Não foi possível atualizar os responsáveis.');
     }
-  }, [plan, updateTaskInState]);
+  }, [plan, findTask, updateTaskInState]);
 
   const addPlanMember = useCallback(async (profile: AssigneeProfile) => {
     const { error: insertError } = await supabase
