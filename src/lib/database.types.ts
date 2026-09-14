@@ -218,14 +218,20 @@ export type Database = {
         Row: {
           task_id: string
           user_id: string
+          criado_em: string
+          atribuido_por: string | null
         }
         Insert: {
           task_id: string
           user_id: string
+          criado_em?: string
+          atribuido_por?: string | null
         }
         Update: {
           task_id?: string
           user_id?: string
+          criado_em?: string
+          atribuido_por?: string | null
         }
         Relationships: [
           {
@@ -238,6 +244,13 @@ export type Database = {
           {
             foreignKeyName: "task_assignees_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignees_atribuido_por_fkey"
+            columns: ["atribuido_por"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

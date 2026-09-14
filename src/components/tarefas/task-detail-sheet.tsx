@@ -205,7 +205,7 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
             <AssigneePicker
               members={members}
               selected={task.task_assignees.map(a => a.profiles)}
-              onChange={userIds => board.setTaskAssignees(task.id, userIds)}
+              onChange={userIds => board.setTaskAssignees(task.id, userIds, currentUser.id)}
               canManage={canManageAssignees}
               onManageMembers={onManageMembers}
             />

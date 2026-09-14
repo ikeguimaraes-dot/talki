@@ -7,6 +7,7 @@ import { ConvitePage } from '@/pages/convite-page';
 import { HomePage } from '@/pages/home-page';
 import { TarefasPage } from '@/pages/tarefas-page';
 import { PlanPage } from '@/pages/plan-page';
+import { MarcacoesPage } from '@/pages/marcacoes-page';
 import { ComunicadosPage } from '@/pages/comunicados-page';
 
 const toasterStyle = {
@@ -39,6 +40,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/tarefas" element={<TarefasPage />} />
           <Route path="/tarefas/:planId" element={<PlanPage />} />
+          <Route path="/marcacoes" element={<MarcacoesPage />} />
           <Route path="/mensagens" element={<Navigate to="/" replace />} />
           <Route path="/comunicados" element={<ComunicadosPage />} />
         </Route>

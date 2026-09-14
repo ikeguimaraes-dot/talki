@@ -33,6 +33,18 @@ function parseIsoDate(dateIso: string): { day: number; month: number; year: numb
   return { day, month: month - 1, year };
 }
 
+export function formatRelativeTime(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'agora mesmo';
+  if (diffMin < 60) return `há ${diffMin} minuto${diffMin > 1 ? 's' : ''}`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `há ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+  if (diffHours < 48) return 'ontem';
+  const diffDays = Math.floor(diffHours / 24);
+  return `há ${diffDays} dias`;
+}
+
 export function formatDateRangeBR(inicio: string | null, prazo: string | null): string {
   if (!inicio && !prazo) return '';
   if (!inicio && prazo) {

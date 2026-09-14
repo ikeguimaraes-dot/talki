@@ -155,7 +155,7 @@ export function usePlanBoard(planId: string) {
     await persistTasksOrder([fromBucketId, toBucketId]);
   }, [findTask, persistTasksOrder]);
 
-  const setTaskAssignees = useCallback(async (taskId: string, userIds: string[]) => {
+  const setTaskAssignees = useCallback(async (taskId: string, userIds: string[], assignedBy: string) => {
     const memberProfiles = plan?.plan_members.map(m => m.profiles) ?? [];
     const resolved = userIds
       .map(id => memberProfiles.find(p => p.id === id))
@@ -176,9 +176,12 @@ export function usePlanBoard(planId: string) {
       await supabase.from('task_assignees').delete().eq('task_id', taskId).in('user_id', toRemove);
     }
     if (toAdd.length > 0) {
+      // Passa atribuido_por explicitamente em vez de confiar só no
+      // default auth.uid() do banco — não vale se o insert algum dia
+      // rodar por um caminho elevado (service role) sem sessão de usuário.
       const { error: insertError } = await supabase
         .from('task_assignees')
-        .insert(toAdd.map(user_id => ({ task_id: taskId, user_id })));
+        .insert(toAdd.map(user_id => ({ task_id: taskId, user_id, atribuido_por: assignedBy })));
       if (insertError) toast.error('Não foi possível atualizar os responsáveis.');
     }
   }, [plan, findTask, updateTaskInState]);
