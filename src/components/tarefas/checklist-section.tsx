@@ -13,13 +13,32 @@ interface ChecklistSectionProps {
   items: ChecklistItem[];
   onAdd: (texto: string) => void;
   onToggle: (itemId: string, feito: boolean) => void;
+  onEdit: (itemId: string, texto: string) => void;
   onDelete: (itemId: string) => void;
   onReorder: (items: ChecklistItem[]) => void;
 }
 
-function ChecklistRow({ item, onToggle, onDelete }: { item: ChecklistItem; onToggle: (feito: boolean) => void; onDelete: () => void }) {
+function ChecklistRow({ item, onToggle, onEdit, onDelete }: { item: ChecklistItem; onToggle: (feito: boolean) => void; onEdit: (texto: string) => void; onDelete: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(item.texto);
+
+  const submitEdit = () => {
+    const trimmed = draft.trim();
+    if (trimmed && trimmed !== item.texto) onEdit(trimmed);
+    else setDraft(item.texto);
+    setEditing(false);
+  };
+
+  const handleEditKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') submitEdit();
+    if (e.key === 'Escape') {
+      setDraft(item.texto);
+      setEditing(false);
+    }
+  };
 
   return (
     <div ref={setNodeRef} style={style} className="group flex items-center gap-2 rounded-md px-1 py-1 hover:bg-muted/50">
@@ -27,7 +46,25 @@ function ChecklistRow({ item, onToggle, onDelete }: { item: ChecklistItem; onTog
         <GripVertical className="size-3.5" />
       </button>
       <Checkbox checked={item.feito} onCheckedChange={checked => onToggle(checked === true)} />
-      <span className={cn('flex-1 text-sm', item.feito && 'text-muted-foreground line-through')}>{item.texto}</span>
+      {editing ? (
+        <Input
+          autoFocus
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onFocus={e => e.target.select()}
+          onBlur={submitEdit}
+          onKeyDown={handleEditKeyDown}
+          className="h-7 flex-1 text-sm"
+        />
+      ) : (
+        <span
+          onDoubleClick={() => setEditing(true)}
+          className={cn('flex-1 cursor-default text-sm', item.feito && 'text-muted-foreground line-through')}
+          title="Duplo clique para editar"
+        >
+          {item.texto}
+        </span>
+      )}
       <button onClick={onDelete} className="text-muted-foreground/40 opacity-0 hover:text-destructive group-hover:opacity-100">
         <X className="size-3.5" />
       </button>
@@ -35,7 +72,7 @@ function ChecklistRow({ item, onToggle, onDelete }: { item: ChecklistItem; onTog
   );
 }
 
-export function ChecklistSection({ items, onAdd, onToggle, onDelete, onReorder }: ChecklistSectionProps) {
+export function ChecklistSection({ items, onAdd, onToggle, onEdit, onDelete, onReorder }: ChecklistSectionProps) {
   const [novoTexto, setNovoTexto] = useState('');
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -75,6 +112,7 @@ export function ChecklistSection({ items, onAdd, onToggle, onDelete, onReorder }
                 key={item.id}
                 item={item}
                 onToggle={feito => onToggle(item.id, feito)}
+                onEdit={texto => onEdit(item.id, texto)}
                 onDelete={() => onDelete(item.id)}
               />
             ))}

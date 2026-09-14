@@ -310,6 +310,16 @@ export function usePlanBoard(planId: string) {
     if (updateError) toast.error('Não foi possível atualizar o item.');
   }, [findTask, updateTaskInState]);
 
+  const editChecklistItem = useCallback(async (taskId: string, itemId: string, texto: string) => {
+    const task = findTask(taskId);
+    if (!task) return;
+    updateTaskInState(taskId, {
+      task_checklist: task.task_checklist.map(i => (i.id === itemId ? { ...i, texto } : i)),
+    });
+    const { error: updateError } = await supabase.from('task_checklist').update({ texto }).eq('id', itemId);
+    if (updateError) toast.error('Não foi possível editar o item.');
+  }, [findTask, updateTaskInState]);
+
   const deleteChecklistItem = useCallback(async (taskId: string, itemId: string) => {
     const task = findTask(taskId);
     if (!task) return;
@@ -432,6 +442,7 @@ export function usePlanBoard(planId: string) {
     createLabel,
     addChecklistItem,
     toggleChecklistItem,
+    editChecklistItem,
     deleteChecklistItem,
     reorderChecklistItems,
     duplicateTask,

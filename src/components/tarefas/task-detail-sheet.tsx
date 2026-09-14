@@ -231,6 +231,7 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
               items={task.task_checklist}
               onAdd={texto => board.addChecklistItem(task.id, texto)}
               onToggle={(itemId, feito) => board.toggleChecklistItem(task.id, itemId, feito)}
+              onEdit={(itemId, texto) => board.editChecklistItem(task.id, itemId, texto)}
               onDelete={itemId => board.deleteChecklistItem(task.id, itemId)}
               onReorder={items => board.reorderChecklistItems(task.id, items)}
             />
