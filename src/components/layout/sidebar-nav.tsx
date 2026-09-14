@@ -1,6 +1,7 @@
+import { Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
-import { CheckCircle2, ChevronsUpDown, CirclePlus, LogOut, PanelLeftClose, PanelLeftOpen, Sparkles, Tag, User as UserIcon } from 'lucide-react';
+import { ChevronsUpDown, CirclePlus, LogOut, PanelLeftClose, PanelLeftOpen, Sparkles, Tag, User as UserIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn, getInitials } from '@/lib/utils';
 import { supabase } from '@/supabase';
@@ -85,29 +86,29 @@ export function SidebarNav({ user, collapsed = false, onNavigate, onToggleCollap
         {!collapsed && (
           <div className="mt-6 space-y-1">
             <p className="eyebrow mb-2 px-2.5">Perspectivas</p>
-            {PERSPECTIVAS_ITEMS.map(({ label, href, icon: Icon }) => (
-              <NavLink
-                key={href}
-                to={href}
-                onClick={onNavigate}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-colors',
-                    isActive
-                      ? 'bg-sidebar-accent text-sidebar-foreground'
-                      : 'text-sidebar-foreground/45 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
-                  )
-                }
-              >
-                <Icon className="size-4" /> {label}
-              </NavLink>
+            {PERSPECTIVAS_ITEMS.map(({ label, href, icon: Icon }, index) => (
+              <Fragment key={href}>
+                <NavLink
+                  to={href}
+                  onClick={onNavigate}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-colors',
+                      isActive
+                        ? 'bg-sidebar-accent text-sidebar-foreground'
+                        : 'text-sidebar-foreground/45 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
+                    )
+                  }
+                >
+                  <Icon className="size-4" /> {label}
+                </NavLink>
+                {index === 0 && (
+                  <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-sidebar-foreground/45 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground">
+                    <Tag className="size-4" /> Etiquetas
+                  </button>
+                )}
+              </Fragment>
             ))}
-            <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-sidebar-foreground/45 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground">
-              <Tag className="size-4" /> Etiquetas
-            </button>
-            <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-sidebar-foreground/45 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground">
-              <CheckCircle2 className="size-4" /> Concluídas
-            </button>
           </div>
         )}
       </nav>

@@ -26,13 +26,6 @@ export function formatDateBR(dateIso: string | null): string {
   return `${day}/${month}/${year}`;
 }
 
-const MESES_ABREV = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-
-function parseIsoDate(dateIso: string): { day: number; month: number; year: number } {
-  const [year, month, day] = dateIso.split('-').map(Number);
-  return { day, month: month - 1, year };
-}
-
 export function formatRelativeTime(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
   const diffMin = Math.floor(diffMs / 60000);
@@ -43,6 +36,28 @@ export function formatRelativeTime(iso: string): string {
   if (diffHours < 48) return 'ontem';
   const diffDays = Math.floor(diffHours / 24);
   return `há ${diffDays} dias`;
+}
+
+export function completionPeriodLabel(concluidaEmIso: string): string {
+  const completedDate = concluidaEmIso.slice(0, 10);
+  const today = todayIso();
+  if (completedDate === today) return 'Hoje';
+
+  const diffDays = Math.round((Date.parse(today) - Date.parse(completedDate)) / 86400000);
+  if (diffDays <= 7) return 'Esta semana';
+
+  const [todayYear, todayMonth] = today.split('-');
+  const [compYear, compMonth] = completedDate.split('-');
+  if (compYear === todayYear && compMonth === todayMonth) return 'Este mês';
+
+  return 'Mais antigas';
+}
+
+const MESES_ABREV = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+function parseIsoDate(dateIso: string): { day: number; month: number; year: number } {
+  const [year, month, day] = dateIso.split('-').map(Number);
+  return { day, month: month - 1, year };
 }
 
 export function formatDateRangeBR(inicio: string | null, prazo: string | null): string {
