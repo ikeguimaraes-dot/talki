@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
-import { ChevronsUpDown, CirclePlus, LogOut, PanelLeftClose, PanelLeftOpen, Sparkles, User as UserIcon } from 'lucide-react';
+import { ChevronsUpDown, CirclePlus, LogOut, PanelLeftClose, PanelLeftOpen, User as UserIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn, getInitials } from '@/lib/utils';
 import { supabase } from '@/supabase';
 import { NAV_ITEMS, PERSPECTIVAS_ITEMS } from '@/components/layout/nav-items';
+import { TalkiLogo } from '@/components/layout/talki-logo';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,10 +36,7 @@ export function SidebarNav({ user, collapsed = false, onNavigate, onToggleCollap
       <div className={cn('flex h-[58px] shrink-0 items-center', collapsed ? 'justify-center px-0' : 'justify-between px-2')}>
         {!collapsed && (
           <div className="flex items-center gap-2.5">
-            <span className="relative flex size-8 items-center justify-center rounded-[11px] bg-gradient-to-br from-[#9a8cff] via-[#7462ff] to-[#478aff] text-white shadow-[0_0_28px_rgba(124,108,255,0.36)]">
-              <Sparkles className="size-4" />
-              <span className="absolute inset-px rounded-[10px] border border-white/25" />
-            </span>
+            <TalkiLogo className="size-8" />
             <span className="font-heading text-lg font-bold tracking-[-0.045em] text-sidebar-foreground">talki</span>
           </div>
         )}

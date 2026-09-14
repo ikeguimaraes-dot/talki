@@ -1,11 +1,12 @@
 import { useState, type FormEvent } from 'react';
-import { ArrowRight, Check, Sparkles } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TalkiLogo } from '@/components/layout/talki-logo';
 
 export function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -60,7 +61,7 @@ export function LoginPage() {
         <div className="absolute left-[18%] top-[22%] size-80 rounded-full bg-primary/20 blur-[110px]" />
         <div className="absolute bottom-[12%] right-[4%] size-72 rounded-full bg-[#218cff]/15 blur-[100px]" />
         <div className="relative flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-[12px] bg-gradient-to-br from-[#9a8cff] via-[#7462ff] to-[#478aff] text-white shadow-[0_0_30px_rgba(124,108,255,0.38)]"><Sparkles className="size-4" /></span>
+          <TalkiLogo className="size-9" />
           <span className="text-xl font-bold tracking-[-0.05em]">talki</span>
         </div>
 
@@ -85,7 +86,7 @@ export function LoginPage() {
       <div className="glass-panel w-full max-w-[430px] rounded-[26px] p-6 sm:p-8">
         <div className="mb-7 lg:hidden">
           <div className="flex items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-[12px] bg-gradient-to-br from-[#9a8cff] to-[#478aff] text-white"><Sparkles className="size-4" /></span>
+            <TalkiLogo className="size-9" />
             <span className="text-xl font-bold tracking-[-0.05em]">talki</span>
           </div>
         </div>
