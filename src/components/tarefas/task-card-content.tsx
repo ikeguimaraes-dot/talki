@@ -99,7 +99,7 @@ export function TaskCardContent({ task, onToggleDone, onChangeColor }: TaskCardC
           {checklistTotal > 0 && (
             <span className="flex items-center gap-1">
               <ListChecks className="size-3.5" />
-              {checklistDone}/{checklistTotal}
+              {checklistDone}/{checklistTotal} · {Math.round((checklistDone / checklistTotal) * 100)}%
             </span>
           )}
         </div>

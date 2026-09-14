@@ -64,7 +64,7 @@ export function ChecklistSection({ items, onAdd, onToggle, onDelete, onReorder }
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium text-muted-foreground">
-        Checklist {items.length > 0 && `(${done}/${items.length})`}
+        Checklist {items.length > 0 && `(${done}/${items.length} · ${Math.round((done / items.length) * 100)}%)`}
       </p>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

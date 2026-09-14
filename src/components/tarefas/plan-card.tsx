@@ -7,7 +7,12 @@ import type { PlanWithMembers } from '@/lib/types';
 export function PlanCard({ plan }: { plan: PlanWithMembers }) {
   const total = plan.tasks.length;
   const concluidas = plan.tasks.filter(t => t.status === 'concluida').length;
-  const progresso = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+  const somaProgresso = plan.tasks.reduce((soma, t) => {
+    const checklist = t.task_checklist ?? [];
+    if (checklist.length > 0) return soma + checklist.filter(i => i.feito).length / checklist.length;
+    return soma + (t.status === 'concluida' ? 1 : 0);
+  }, 0);
+  const progresso = total > 0 ? Math.round((somaProgresso / total) * 100) : 0;
 
   return (
     <Link

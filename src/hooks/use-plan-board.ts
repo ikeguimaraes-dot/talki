@@ -3,6 +3,23 @@ import { toast } from 'sonner';
 import { supabase } from '@/supabase';
 import type { AssigneeProfile, BucketWithTasks, ChecklistItem, PlanWithMembers, Task, TaskLabel, TaskWithRelations } from '@/lib/types';
 
+// Espelha no client, de forma otimista, a mesma regra do trigger
+// sync_task_status_from_checklist no banco: tarefa com checklist
+// (>=1 item) fecha sozinha em 100% e reabre se cair abaixo disso.
+// Tarefa sem checklist (total 0) nunca é afetada.
+function deriveChecklistStatusPatch(checklist: ChecklistItem[], currentStatus: string): { status: string; concluida_em: string | null } | null {
+  const total = checklist.length;
+  if (total === 0) return null;
+  const done = checklist.filter(i => i.feito).length;
+  if (done === total && currentStatus !== 'concluida') {
+    return { status: 'concluida', concluida_em: new Date().toISOString() };
+  }
+  if (done < total && currentStatus === 'concluida') {
+    return { status: 'em_andamento', concluida_em: null };
+  }
+  return null;
+}
+
 const TASK_SELECT = `
   id, plan_id, bucket_id, titulo, descricao, prioridade, status, prazo, inicio, ordem, cor, criado_por, criado_em, concluida_em,
   task_assignees(profiles!task_assignees_user_id_fkey(id, nome, email, avatar_url, cargo)),
@@ -278,15 +295,17 @@ export function usePlanBoard(planId: string) {
       return;
     }
 
-    updateTaskInState(taskId, { task_checklist: [...(task?.task_checklist ?? []), data] });
+    const nextChecklist = [...(task?.task_checklist ?? []), data];
+    const statusPatch = task ? deriveChecklistStatusPatch(nextChecklist, task.status) : null;
+    updateTaskInState(taskId, { task_checklist: nextChecklist, ...statusPatch });
   }, [findTask, updateTaskInState]);
 
   const toggleChecklistItem = useCallback(async (taskId: string, itemId: string, feito: boolean) => {
     const task = findTask(taskId);
     if (!task) return;
-    updateTaskInState(taskId, {
-      task_checklist: task.task_checklist.map(i => (i.id === itemId ? { ...i, feito } : i)),
-    });
+    const nextChecklist = task.task_checklist.map(i => (i.id === itemId ? { ...i, feito } : i));
+    const statusPatch = deriveChecklistStatusPatch(nextChecklist, task.status);
+    updateTaskInState(taskId, { task_checklist: nextChecklist, ...statusPatch });
     const { error: updateError } = await supabase.from('task_checklist').update({ feito }).eq('id', itemId);
     if (updateError) toast.error('Não foi possível atualizar o item.');
   }, [findTask, updateTaskInState]);
@@ -294,7 +313,9 @@ export function usePlanBoard(planId: string) {
   const deleteChecklistItem = useCallback(async (taskId: string, itemId: string) => {
     const task = findTask(taskId);
     if (!task) return;
-    updateTaskInState(taskId, { task_checklist: task.task_checklist.filter(i => i.id !== itemId) });
+    const nextChecklist = task.task_checklist.filter(i => i.id !== itemId);
+    const statusPatch = deriveChecklistStatusPatch(nextChecklist, task.status);
+    updateTaskInState(taskId, { task_checklist: nextChecklist, ...statusPatch });
     const { error: deleteError } = await supabase.from('task_checklist').delete().eq('id', itemId);
     if (deleteError) toast.error('Não foi possível remover o item.');
   }, [findTask, updateTaskInState]);

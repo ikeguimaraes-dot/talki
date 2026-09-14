@@ -37,7 +37,7 @@ export function TarefasPage() {
     try {
       const { data, error: plansError } = await supabase
         .from('plans')
-        .select('*, plan_members(profiles(id, nome, email, avatar_url)), tasks(id, status, prazo)')
+        .select('*, plan_members(profiles(id, nome, email, avatar_url)), tasks(id, status, prazo, task_checklist(feito))')
         .order('criado_em', { ascending: false });
 
       if (plansError) throw plansError;
