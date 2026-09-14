@@ -15,6 +15,12 @@ export function getInitials(displayName: string): string {
     .toUpperCase()
 }
 
+export function checklistToneClass(tone: 'verde' | 'vermelho' | 'neutro'): string {
+  if (tone === 'verde') return 'text-[#3ddcaa]'
+  if (tone === 'vermelho') return 'text-destructive'
+  return ''
+}
+
 export function stripMarkdown(text: string): string {
   return text
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')

@@ -6,11 +6,14 @@ import { GripVertical, Plus, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { checklistToneClass, cn } from '@/lib/utils';
+import { checklistPercentTone } from '@/lib/date';
 import type { ChecklistItem } from '@/lib/types';
 
 interface ChecklistSectionProps {
   items: ChecklistItem[];
+  status: string;
+  prazo: string | null;
   onAdd: (texto: string) => void;
   onToggle: (itemId: string, feito: boolean) => void;
   onEdit: (itemId: string, texto: string) => void;
@@ -72,7 +75,7 @@ function ChecklistRow({ item, onToggle, onEdit, onDelete }: { item: ChecklistIte
   );
 }
 
-export function ChecklistSection({ items, onAdd, onToggle, onEdit, onDelete, onReorder }: ChecklistSectionProps) {
+export function ChecklistSection({ items, status, prazo, onAdd, onToggle, onEdit, onDelete, onReorder }: ChecklistSectionProps) {
   const [novoTexto, setNovoTexto] = useState('');
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -97,11 +100,16 @@ export function ChecklistSection({ items, onAdd, onToggle, onEdit, onDelete, onR
   };
 
   const done = items.filter(i => i.feito).length;
+  const percentClass = items.length > 0 ? checklistToneClass(checklistPercentTone(status, prazo)) : '';
 
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium text-muted-foreground">
-        Checklist {items.length > 0 && `(${done}/${items.length} · ${Math.round((done / items.length) * 100)}%)`}
+        Checklist {items.length > 0 && (
+          <>
+            ({done}/{items.length} · <span className={cn('text-sm font-semibold', percentClass)}>{Math.round((done / items.length) * 100)}%</span>)
+          </>
+        )}
       </p>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

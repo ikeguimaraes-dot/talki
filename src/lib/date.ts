@@ -7,6 +7,15 @@ export function isOverdue(prazo: string | null, status: string): boolean {
   return prazo < todayIso();
 }
 
+// Tom pro percentual de checklist: concluída ou em dia = verde,
+// atrasada = vermelho, sem prazo definido = neutro (não dá pra
+// avaliar "em dia"/"atrasada" sem uma data).
+export function checklistPercentTone(status: string, prazo: string | null): 'verde' | 'vermelho' | 'neutro' {
+  if (status === 'concluida') return 'verde';
+  if (!prazo) return 'neutro';
+  return isOverdue(prazo, status) ? 'vermelho' : 'verde';
+}
+
 export function isToday(dateIso: string | null): boolean {
   return dateIso === todayIso();
 }

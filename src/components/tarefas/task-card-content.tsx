@@ -1,6 +1,6 @@
 import { Calendar, ListChecks, MoreHorizontal, Palette } from 'lucide-react';
-import { cn, stripMarkdown } from '@/lib/utils';
-import { formatDateRangeBR, isOverdue, isToday } from '@/lib/date';
+import { checklistToneClass, cn, stripMarkdown } from '@/lib/utils';
+import { checklistPercentTone, formatDateRangeBR, isOverdue, isToday } from '@/lib/date';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,6 +32,7 @@ export function TaskCardContent({ task, onToggleDone, onChangeColor }: TaskCardC
   const done = task.status === 'concluida';
   const descricaoPreview = task.descricao ? stripMarkdown(task.descricao) : '';
   const dateRange = formatDateRangeBR(task.inicio, task.prazo);
+  const checklistPercentClass = checklistTotal > 0 ? checklistToneClass(checklistPercentTone(task.status, task.prazo)) : '';
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -99,7 +100,7 @@ export function TaskCardContent({ task, onToggleDone, onChangeColor }: TaskCardC
           {checklistTotal > 0 && (
             <span className="flex items-center gap-1">
               <ListChecks className="size-3.5" />
-              {checklistDone}/{checklistTotal} · {Math.round((checklistDone / checklistTotal) * 100)}%
+              {checklistDone}/{checklistTotal} · <span className={cn('text-xs font-semibold', checklistPercentClass)}>{Math.round((checklistDone / checklistTotal) * 100)}%</span>
             </span>
           )}
         </div>

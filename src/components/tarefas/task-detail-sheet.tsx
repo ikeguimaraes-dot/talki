@@ -229,6 +229,8 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
 
             <ChecklistSection
               items={task.task_checklist}
+              status={task.status}
+              prazo={task.prazo}
               onAdd={texto => board.addChecklistItem(task.id, texto)}
               onToggle={(itemId, feito) => board.toggleChecklistItem(task.id, itemId, feito)}
               onEdit={(itemId, texto) => board.editChecklistItem(task.id, itemId, texto)}
