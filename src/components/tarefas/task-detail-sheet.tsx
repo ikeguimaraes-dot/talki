@@ -113,7 +113,7 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={handleDuplicate}><Copy /> Duplicar</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setMoveOpen(true)}><FolderInput /> Mover para outro plano</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setMoveOpen(true)}><FolderInput /> Mover para outro projeto</DropdownMenuItem>
                   <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}><Trash2 /> Excluir</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

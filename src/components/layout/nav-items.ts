@@ -1,4 +1,4 @@
-import { CalendarDays, FolderKanban, MessageSquare, Megaphone, type LucideIcon } from 'lucide-react';
+import { CalendarDays, FolderKanban, Megaphone, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   label: string;
@@ -9,6 +9,5 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Hoje', href: '/', icon: CalendarDays },
   { label: 'Projetos', href: '/tarefas', icon: FolderKanban },
-  { label: 'Mensagens', href: '/mensagens', icon: MessageSquare },
   { label: 'Comunicados', href: '/comunicados', icon: Megaphone },
 ];

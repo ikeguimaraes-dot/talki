@@ -70,7 +70,7 @@ export function TarefasPage() {
   const headerActions = useMemo(
     () => (
       <Button size="sm" onClick={() => setDialogOpen(true)}>
-        <Plus /> Novo plano
+        <Plus /> Novo projeto
       </Button>
     ),
     []
@@ -107,13 +107,13 @@ export function TarefasPage() {
         {loading ? (
           <CardGridSkeleton />
         ) : error ? (
-          <ErrorState message="Não foi possível carregar seus planos." onRetry={load} />
+          <ErrorState message="Não foi possível carregar seus projetos." onRetry={load} />
         ) : !plans || plans.length === 0 ? (
           <EmptyState
             icon={FolderKanban}
-            title="Nenhum plano ainda"
-            description="Crie um plano pra começar a organizar as tarefas da sua equipe."
-            action={<Button onClick={() => setDialogOpen(true)}><Plus /> Novo plano</Button>}
+            title="Nenhum projeto ainda"
+            description="Crie um projeto pra começar a organizar as tarefas da sua equipe."
+            action={<Button onClick={() => setDialogOpen(true)}><Plus /> Novo projeto</Button>}
           />
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">

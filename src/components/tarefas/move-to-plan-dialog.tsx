@@ -50,17 +50,17 @@ export function MoveToPlanDialog({ open, onOpenChange, currentPlanId, onMove }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Mover para outro plano</DialogTitle>
+          <DialogTitle>Mover para outro projeto</DialogTitle>
           <DialogDescription>
-            A tarefa vai para o primeiro bucket do plano escolhido. Responsáveis e labels serão removidos.
+            A tarefa vai para o primeiro bucket do projeto escolhido. Responsáveis e labels serão removidos.
           </DialogDescription>
         </DialogHeader>
 
         {plans && plans.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Você não tem outros planos.</p>
+          <p className="text-sm text-muted-foreground">Você não tem outros projetos.</p>
         ) : (
           <Select value={selected} onValueChange={setSelected}>
-            <SelectTrigger className="w-full"><SelectValue placeholder="Escolha um plano" /></SelectTrigger>
+            <SelectTrigger className="w-full"><SelectValue placeholder="Escolha um projeto" /></SelectTrigger>
             <SelectContent>
               {plans?.map(p => (
                 <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>

@@ -347,7 +347,7 @@ export function usePlanBoard(planId: string) {
       .maybeSingle();
 
     if (bucketError || !targetBucket) {
-      toast.error('O plano de destino precisa ter pelo menos um bucket.');
+      toast.error('O projeto de destino precisa ter pelo menos um bucket.');
       return false;
     }
 

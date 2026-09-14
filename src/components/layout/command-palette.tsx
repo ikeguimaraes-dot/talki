@@ -71,20 +71,20 @@ export function CommandPalette({ open, onOpenChange, user }: CommandPaletteProps
 
           <CommandGroup heading="Ações">
             <CommandItem
-              value="Criar plano"
+              value="Criar projeto"
               onSelect={() => {
                 onOpenChange(false);
                 setCreatePlanOpen(true);
               }}
             >
-              <FolderPlus /> Criar plano
+              <FolderPlus /> Criar projeto
             </CommandItem>
           </CommandGroup>
 
           {plans.length > 0 && (
             <>
               <CommandSeparator />
-              <CommandGroup heading="Abrir plano">
+              <CommandGroup heading="Abrir projeto">
                 {plans.map(plan => (
                   <CommandItem key={plan.id} value={plan.nome} onSelect={() => goTo(`/tarefas/${plan.id}`)}>
                     <ListChecks /> {plan.nome}

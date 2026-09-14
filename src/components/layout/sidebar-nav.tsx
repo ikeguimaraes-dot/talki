@@ -55,7 +55,7 @@ export function SidebarNav({ user, collapsed = false, onNavigate, onToggleCollap
 
       {!collapsed && (
         <NavLink to="/tarefas" className="mx-1 mb-5 mt-2 flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7968ff] to-[#5d8dff] text-sm font-semibold text-white shadow-[0_10px_28px_rgba(99,78,255,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(99,78,255,0.38)]">
-          <CirclePlus className="size-4" /> Capturar tarefa
+          <CirclePlus className="size-4" /> Nova tarefa
         </NavLink>
       )}
 

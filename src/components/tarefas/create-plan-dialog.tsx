@@ -62,7 +62,7 @@ export function CreatePlanDialog({ open, onOpenChange, currentUserId, onCreated 
       onCreated(plan);
     } catch (err) {
       console.error('Erro ao criar plano:', err);
-      toast.error('Não foi possível criar o plano.');
+      toast.error('Não foi possível criar o projeto.');
     } finally {
       setLoading(false);
     }
@@ -73,8 +73,8 @@ export function CreatePlanDialog({ open, onOpenChange, currentUserId, onCreated 
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Novo plano</DialogTitle>
-            <DialogDescription>Crie um plano para organizar as tarefas da equipe.</DialogDescription>
+            <DialogTitle>Novo projeto</DialogTitle>
+            <DialogDescription>Crie um projeto para organizar as tarefas da equipe.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -109,7 +109,7 @@ export function CreatePlanDialog({ open, onOpenChange, currentUserId, onCreated 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={loading || !nome.trim()}>
-              {loading ? 'Criando...' : 'Criar plano'}
+              {loading ? 'Criando...' : 'Criar projeto'}
             </Button>
           </DialogFooter>
         </form>

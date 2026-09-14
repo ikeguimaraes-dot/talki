@@ -55,11 +55,11 @@ export function ConvitePage() {
       const { error: acceptError } = await supabase.rpc('accept_plan_invite', { p_token: token });
       if (acceptError) throw acceptError;
 
-      toast.success(`Você entrou no plano "${invite.planNome}"!`);
+      toast.success(`Você entrou no projeto "${invite.planNome}"!`);
       navigate('/', { replace: true });
     } catch (err) {
       console.error('Erro ao aceitar convite:', err);
-      toast.error('Não foi possível entrar no plano.');
+      toast.error('Não foi possível entrar no projeto.');
     } finally {
       setAccepting(false);
     }
@@ -99,7 +99,7 @@ export function ConvitePage() {
                   Logado como <strong className="text-foreground">{user.email}</strong>
                 </p>
                 <Button className="w-full" disabled={accepting} onClick={handleAccept}>
-                  {accepting ? 'Entrando...' : 'Entrar no plano'}
+                  {accepting ? 'Entrando...' : 'Entrar no projeto'}
                 </Button>
               </>
             )}

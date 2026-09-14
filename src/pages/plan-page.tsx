@@ -61,7 +61,7 @@ export function PlanPage() {
   const closeTask = () => setSearchParams(prev => { const next = new URLSearchParams(prev); next.delete('tarefa'); return next; });
 
   usePageHeader({
-    title: plan?.nome ?? 'Plano',
+    title: plan?.nome ?? 'Projeto',
     breadcrumb: [{ label: 'Tarefas', href: '/tarefas' }],
   });
 
@@ -115,7 +115,7 @@ export function PlanPage() {
   }
 
   if (error || !plan) {
-    return <ErrorState message="Não foi possível carregar este plano." onRetry={reload} />;
+    return <ErrorState message="Não foi possível carregar este projeto." onRetry={reload} />;
   }
 
   const canManagePlan = isAdmin || plan.criado_por === user.id;
