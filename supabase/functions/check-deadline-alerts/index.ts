@@ -157,6 +157,7 @@ Deno.serve(async (req) => {
         const planName = task.plans?.nome ?? "um projeto";
         const link = `${SITE_URL}/tarefas/${task.plan_id}?tarefa=${task.id}`;
         const prazoFormatado = formatDeadlineBR(task.prazo);
+        let taskFailures = 0;
 
         for (const assignee of assignees) {
           if (!assignee?.email) continue;
@@ -172,16 +173,24 @@ Deno.serve(async (req) => {
             emailsSent++;
           } catch (err) {
             failures++;
+            taskFailures++;
             console.error(`check-deadline-alerts: falha ao enviar pra ${assignee.email}`, err);
           }
         }
 
-        const { error: updateError } = await supabase
-          .from("tasks")
-          .update({ [w.flagColumn]: true })
-          .eq("id", task.id);
-        if (updateError) {
-          console.error(`check-deadline-alerts: falha ao marcar ${w.flagColumn}`, task.id, updateError);
+        // Só marca "enviado" se ninguém falhou: uma falha sistêmica (chave
+        // ausente, Resend fora do ar) não pode marcar a tarefa como
+        // notificada e perder o alerta pra sempre — melhor arriscar um
+        // reenvio duplicado pra quem já recebeu do que nunca mais tentar
+        // de novo pra quem não recebeu.
+        if (taskFailures === 0) {
+          const { error: updateError } = await supabase
+            .from("tasks")
+            .update({ [w.flagColumn]: true })
+            .eq("id", task.id);
+          if (updateError) {
+            console.error(`check-deadline-alerts: falha ao marcar ${w.flagColumn}`, task.id, updateError);
+          }
         }
       }
     }
