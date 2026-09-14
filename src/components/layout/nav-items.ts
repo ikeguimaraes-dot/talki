@@ -1,4 +1,4 @@
-import { AtSign, CalendarDays, CheckCircle2, FolderKanban, Megaphone, type LucideIcon } from 'lucide-react';
+import { AtSign, CalendarDays, CheckCircle2, FolderKanban, Megaphone, Tag, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   label: string;
@@ -12,9 +12,8 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Comunicados', href: '/comunicados', icon: Megaphone },
 ];
 
-// Etiquetas entra aqui no bloco C, entre Marcações e Concluídas (ordem
-// final: Marcações, Etiquetas, Concluídas).
 export const PERSPECTIVAS_ITEMS: NavItem[] = [
   { label: 'Marcações', href: '/marcacoes', icon: AtSign },
+  { label: 'Etiquetas', href: '/etiquetas', icon: Tag },
   { label: 'Concluídas', href: '/concluidas', icon: CheckCircle2 },
 ];
