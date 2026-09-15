@@ -20,6 +20,7 @@ interface BoardProps {
   buckets: BucketWithTasks[];
   setBuckets: React.Dispatch<React.SetStateAction<BucketWithTasks[]>>;
   onRenameBucket: (bucketId: string, nome: string) => void;
+  onDeleteBucket: (bucketId: string) => void;
   onCreateBucket: (nome: string) => void;
   onCreateTask: (bucketId: string, titulo: string) => void;
   onToggleDone: (taskId: string, done: boolean) => void;
@@ -32,6 +33,7 @@ export function Board({
   buckets,
   setBuckets,
   onRenameBucket,
+  onDeleteBucket,
   onCreateBucket,
   onCreateTask,
   onToggleDone,
@@ -117,6 +119,7 @@ export function Board({
             key={bucket.id}
             bucket={bucket}
             onRename={onRenameBucket}
+            onDelete={onDeleteBucket}
             onCreateTask={onCreateTask}
             onToggleDone={onToggleDone}
             onChangeColor={onChangeColor}

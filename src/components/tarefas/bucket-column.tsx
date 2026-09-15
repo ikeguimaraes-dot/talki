@@ -10,13 +10,14 @@ import type { BucketWithTasks, TarefaCor } from '@/lib/types';
 interface BucketColumnProps {
   bucket: BucketWithTasks;
   onRename: (bucketId: string, nome: string) => void;
+  onDelete: (bucketId: string) => void;
   onCreateTask: (bucketId: string, titulo: string) => void;
   onToggleDone: (taskId: string, done: boolean) => void;
   onChangeColor: (taskId: string, cor: TarefaCor | null) => void;
   onOpenTask: (taskId: string) => void;
 }
 
-export function BucketColumn({ bucket, onRename, onCreateTask, onToggleDone, onChangeColor, onOpenTask }: BucketColumnProps) {
+export function BucketColumn({ bucket, onRename, onDelete, onCreateTask, onToggleDone, onChangeColor, onOpenTask }: BucketColumnProps) {
   const { setNodeRef } = useDroppable({ id: bucket.id });
 
   const [editingName, setEditingName] = useState(false);
@@ -85,6 +86,19 @@ export function BucketColumn({ bucket, onRename, onCreateTask, onToggleDone, onC
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuItem onSelect={() => setEditingName(true)}>Renomear etapa</DropdownMenuItem>
+            <span
+              title={bucket.tasks.length > 0 ? `Esvazie o bucket antes de excluir — mova ou apague ${bucket.tasks.length === 1 ? 'a tarefa' : `as ${bucket.tasks.length} tarefas`} dentro dele.` : undefined}
+            >
+              <DropdownMenuItem
+                variant="destructive"
+                disabled={bucket.tasks.length > 0}
+                onSelect={() => {
+                  if (window.confirm(`Excluir a etapa "${bucket.nome}"?`)) onDelete(bucket.id);
+                }}
+              >
+                Excluir bucket
+              </DropdownMenuItem>
+            </span>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

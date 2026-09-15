@@ -108,6 +108,23 @@ export function usePlanBoard(planId: string) {
     if (updateError) toast.error('Não foi possível renomear o bucket.');
   }, []);
 
+  const deleteBucket = useCallback(async (bucketId: string) => {
+    const bucket = buckets.find(b => b.id === bucketId);
+    if (!bucket || bucket.tasks.length > 0) {
+      toast.error('Esvazie o bucket antes de excluir.');
+      return false;
+    }
+
+    setBuckets(prev => prev.filter(b => b.id !== bucketId));
+    const { error: deleteError } = await supabase.from('buckets').delete().eq('id', bucketId);
+    if (deleteError) {
+      toast.error('Não foi possível excluir o bucket.');
+      setBuckets(prev => [...prev, bucket].sort((a, b) => a.ordem - b.ordem));
+      return false;
+    }
+    return true;
+  }, [buckets]);
+
   const createTask = useCallback(async (bucketId: string, titulo: string, criadoPor: string) => {
     const bucket = buckets.find(b => b.id === bucketId);
     if (!bucket) return null;
@@ -430,6 +447,7 @@ export function usePlanBoard(planId: string) {
     findTask,
     createBucket,
     renameBucket,
+    deleteBucket,
     createTask,
     toggleTaskDone,
     persistTasksOrder,

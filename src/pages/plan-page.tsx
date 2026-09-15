@@ -47,7 +47,7 @@ export function PlanPage() {
   const isAdmin = useIsAdmin();
   const [searchParams, setSearchParams] = useSearchParams();
   const board = usePlanBoard(planId!);
-  const { plan, buckets, setBuckets, loading, error, reload, createBucket, renameBucket, createTask, toggleTaskDone, persistTasksOrder, updateTaskFields, addPlanMember, removePlanMember, deletePlan } = board;
+  const { plan, buckets, setBuckets, loading, error, reload, createBucket, renameBucket, deleteBucket, createTask, toggleTaskDone, persistTasksOrder, updateTaskFields, addPlanMember, removePlanMember, deletePlan } = board;
 
   const [tab, setTab] = useState<ViewTab>('quadro');
   const [groupBy, setGroupBy] = useState<GroupBy>('bucket');
@@ -185,6 +185,7 @@ export function PlanPage() {
               buckets={buckets}
               setBuckets={setBuckets}
               onRenameBucket={renameBucket}
+              onDeleteBucket={deleteBucket}
               onCreateBucket={createBucket}
               onCreateTask={(bucketId, titulo) => createTask(bucketId, titulo, user.id)}
               onToggleDone={toggleTaskDone}
