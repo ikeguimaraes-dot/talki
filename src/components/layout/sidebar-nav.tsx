@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
 import { ChevronsUpDown, CirclePlus, LogOut, PanelLeftClose, PanelLeftOpen, User as UserIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -128,10 +128,7 @@ export function SidebarNav({ user, collapsed = false, onNavigate, onToggleCollap
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" side="top" className="w-56">
-            <DropdownMenuItem disabled>
-              <UserIcon />
-              Perfil
-            </DropdownMenuItem>
+            <DropdownMenuItem asChild><Link to="/perfil"><UserIcon />Perfil</Link></DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={handleLogout}>
               <LogOut />

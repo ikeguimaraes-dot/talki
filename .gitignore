@@ -28,3 +28,9 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Private migration identity maps / exports (never credentials in source control)
+.migration-local/
+
+# Supabase CLI local state
+supabase/.temp/

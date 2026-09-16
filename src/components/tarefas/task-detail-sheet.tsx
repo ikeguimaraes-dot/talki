@@ -1,3 +1,5 @@
+import { TaskTime } from '@/components/jornada/task-time';
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Check, Copy, FolderInput, Trash2, MoreHorizontal } from 'lucide-react';
@@ -53,7 +55,7 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
     if (!taskId) return;
     supabase
       .from('task_comments')
-      .select('*, profiles(id, nome, email, avatar_url)')
+      .select('*, profiles!task_comments_user_id_fkey(id, nome, email, avatar_url)')
       .eq('task_id', taskId)
       .order('criado_em')
       .then(({ data }) => setComments((data as unknown as TaskCommentWithProfile[]) ?? []));
@@ -84,7 +86,7 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
     const { data, error } = await supabase
       .from('task_comments')
       .insert({ task_id: task.id, user_id: currentUser.id, texto })
-      .select('*, profiles(id, nome, email, avatar_url)')
+      .select('*, profiles!task_comments_user_id_fkey(id, nome, email, avatar_url)')
       .single();
 
     if (error || !data) {
@@ -101,6 +103,8 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
           <SheetHeader className="gap-2 border-b border-border px-6 py-5 pr-12">
             <div className="flex items-start justify-between gap-2">
               <SheetTitle className="sr-only">Detalhe da tarefa</SheetTitle>
+          {task && <TaskTime taskId={task.id}/>}
+          {task && <Button asChild variant="outline" className="mt-3"><Link to={`/jornada?tarefa=${task.id}`}>Iniciar atividade nesta tarefa</Link></Button>}
               <Input
                 value={titulo.value}
                 onChange={e => titulo.onChange(e.target.value)}

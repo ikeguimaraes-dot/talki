@@ -1,0 +1,9 @@
+.migration-local
+.env
+.env.*
+.git
+node_modules
+supabase
+scripts
+docs
+print

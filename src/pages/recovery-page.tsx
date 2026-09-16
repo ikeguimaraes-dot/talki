@@ -1,0 +1,16 @@
+import { useEffect,useState,type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
+import { supabase } from '@/supabase';
+import { Button } from '@/components/ui/button';
+import { Field,Panel,fieldClass } from '@/components/jornada/common';
+export function RecoveryPage() {
+ const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
+ const [mode,setMode]=useState<'request'|'change'>(()=>window.location.hash.includes('access_token')||new URLSearchParams(window.location.search).has('code')?'change':'request');
+ useEffect(()=>{let mounted=true;void supabase.auth.getSession().then(({data})=>{if(mounted&&data.session)setMode('change');});const {data}=supabase.auth.onAuthStateChange((event,session)=>{if(session&&(event==='PASSWORD_RECOVERY'||event==='SIGNED_IN'))setMode('change');});return()=>{mounted=false;data.subscription.unsubscribe();};},[]);
+ async function activate(){setBusy(true);try{if(!email)throw new Error('Informe seu e-mail.');const {error}=await supabase.auth.resend({type:'signup',email,options:{emailRedirectTo:window.location.origin+'/recuperar-senha'}});if(error)throw error;setMessage('Verifique seu e-mail para confirmar a conta e definir uma senha.');}catch(e){setMessage(e instanceof Error?e.message:'Falha ao enviar confirmação.');}finally{setBusy(false);}}
+ async function submit(e:FormEvent) {e.preventDefault();setBusy(true);setMessage('');try{
+ if(mode==='request'){const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/recuperar-senha'});if(error)throw error;setMessage('Se a conta estiver disponível, você receberá as instruções por e-mail.');}
+ else {const {data}=await supabase.auth.getSession();if(!data.session)throw new Error('Abra o link recebido por e-mail para definir a senha.');const {error}=await supabase.auth.updateUser({password});if(error)throw error;setMessage('Senha atualizada. Você já pode entrar no Talki.');setMode('change');}
+ }catch(e){setMessage(e instanceof Error?e.message:'Não foi possível concluir.');}finally{setBusy(false);}}
+ return <div className="app-canvas flex min-h-screen items-center justify-center p-5"><Panel className="w-full max-w-md"><h1 className="mb-5 text-2xl font-semibold">{mode==='request'?'Recuperar acesso':'Definir nova senha'}</h1><form className="grid gap-4" onSubmit={submit}>{mode==='request'?<Field label="E-mail"><input className={fieldClass} type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></Field>:<Field label="Nova senha"><input className={fieldClass} type="password" minLength={8} required value={password} onChange={e=>setPassword(e.target.value)}/></Field>}<Button disabled={busy}>{busy?'Aguarde…':mode==='request'?'Enviar instruções':'Salvar senha'}</Button>{mode==='request'&&<><p className="text-xs text-muted-foreground">Veio do Pareto? Use o mesmo e-mail. Se sua conta ainda não foi confirmada, solicite a ativação abaixo.</p><Button type="button" variant="outline" disabled={busy} onClick={()=>void activate()}>Reenviar confirmação da conta</Button></>}{message&&<p role="status" className="text-sm">{message}</p>}<Link className="text-sm text-primary" to="/login">Voltar ao login</Link></form></Panel></div>;
+}

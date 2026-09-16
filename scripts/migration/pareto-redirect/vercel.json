@@ -1,0 +1,18 @@
+{
+  "framework": null,
+  "buildCommand": "mkdir -p public && cp index.html public/index.html",
+  "installCommand": "",
+  "outputDirectory": "public",
+  "redirects": [
+    { "source": "/registro", "destination": "https://talki.freneze.com.br/jornada", "permanent": false },
+    { "source": "/perfil", "destination": "https://talki.freneze.com.br/perfil", "permanent": false },
+    { "source": "/login", "destination": "https://talki.freneze.com.br/login", "permanent": false },
+    { "source": "/admin/relatorios", "destination": "https://talki.freneze.com.br/relatorios", "permanent": false },
+    { "source": "/admin/usuarios", "destination": "https://talki.freneze.com.br/gestao/pessoas", "permanent": false },
+    { "source": "/admin/areas", "destination": "https://talki.freneze.com.br/gestao/areas", "permanent": false },
+    { "source": "/admin/categorias", "destination": "https://talki.freneze.com.br/gestao/categorias", "permanent": false },
+    { "source": "/admin/projetos", "destination": "https://talki.freneze.com.br/gestao/projetos", "permanent": false },
+    { "source": "/admin", "destination": "https://talki.freneze.com.br/gestao", "permanent": false },
+    { "source": "/:path*", "destination": "https://talki.freneze.com.br/jornada", "permanent": false }
+  ]
+}

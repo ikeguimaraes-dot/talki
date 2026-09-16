@@ -1,0 +1,7 @@
+import type { ReactNode } from 'react';
+import { NavLink } from 'react-router-dom';
+export const fieldClass='h-10 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground';
+export function Field({label,children}:{label:string;children:ReactNode}) { return <label className="grid gap-1.5 text-sm text-muted-foreground"><span>{label}</span>{children}</label>; }
+export function Panel({children,className=''}:{children:ReactNode;className?:string}) {return <section className={`rounded-2xl border border-border bg-card p-5 ${className}`}>{children}</section>;}
+export function Metric({label,value}:{label:string;value:string|number}) {return <Panel><p className="text-sm text-muted-foreground">{label}</p><p className="mt-2 text-2xl font-semibold tracking-tight">{value}</p></Panel>;}
+export function JornadaNav({gestor=false}:{gestor?:boolean}) {return <div className="mb-6 flex flex-wrap gap-2">{[['/jornada','Minha jornada'],['/perfil','Perfil e engajamento'],...(gestor?[['/gestao','Gestão'],['/relatorios','Relatórios'],['/gestao/pessoas','Pessoas'],['/gestao/areas','Áreas'],['/gestao/categorias','Categorias'],['/gestao/projetos','Projetos']]:[])].map(([href,label])=><NavLink key={href} to={href} end className={({isActive})=>`rounded-xl px-3 py-2 text-sm ${isActive?'bg-primary text-primary-foreground':'bg-muted text-muted-foreground hover:text-foreground'}`}>{label}</NavLink>)}</div>;}

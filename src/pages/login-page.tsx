@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useState, type FormEvent } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import { toast } from 'sonner';
@@ -110,7 +111,7 @@ export function LoginPage() {
               <Input className="h-11 rounded-xl bg-muted/55" id="email" type="email" required autoFocus value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between"><Label htmlFor="password">Senha</Label><button type="button" className="text-[11px] text-primary hover:text-accent-foreground">Esqueceu a senha?</button></div>
+              <div className="flex items-center justify-between"><Label htmlFor="password">Senha</Label><Link to="/recuperar-senha" className="text-[11px] text-primary hover:text-accent-foreground">Esqueceu a senha?</Link></div>
               <Input className="h-11 rounded-xl bg-muted/55" id="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
             </div>
             <Button type="submit" disabled={loading} className="h-11 w-full rounded-xl bg-gradient-to-r from-[#7866ff] to-[#568dff] text-sm shadow-[0_10px_28px_rgba(103,82,255,0.3)] hover:brightness-110">

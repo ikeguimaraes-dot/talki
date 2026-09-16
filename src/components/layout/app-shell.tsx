@@ -1,3 +1,4 @@
+import { TimerBar } from '@/components/jornada/timer-bar';
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
@@ -65,6 +66,7 @@ export function AppShell({ user }: { user: User }) {
             onOpenMobileNav={() => setMobileNavOpen(true)}
             onOpenCommandPalette={() => setCommandOpen(true)}
           />
+          <TimerBar userId={user.id} />
           <main className="flex-1 overflow-y-auto px-2 pb-3 pt-5 sm:px-5 sm:pb-5 sm:pt-7 xl:px-8">
             <div className="mx-auto w-full max-w-[1560px] animate-enter">
               <Outlet context={user} />
