@@ -32,7 +32,7 @@ import { ChecklistSection } from '@/components/tarefas/checklist-section';
 import { CommentsSection } from '@/components/tarefas/comments-section';
 import { MoveToPlanDialog } from '@/components/tarefas/move-to-plan-dialog';
 import { CORES_TAREFA, COR_TAREFA_LABEL, COR_TAREFA_VAR, PRIORIDADE_LABEL, PRIORIDADES, STATUS_LABEL, STATUS_TAREFA, type TaskCommentWithProfile } from '@/lib/types';
-import { formatDateBR } from '@/lib/date';
+import { formatDateBR, formatFullDateBR } from '@/lib/date';
 
 interface TaskDetailSheetProps {
   taskId: string | null;
@@ -245,7 +245,10 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
             <CommentsSection comments={comments} onAdd={handleAddComment} />
 
             <div className="border-t border-border pt-3 text-xs text-muted-foreground">
-              Criado por {criador?.nome || criador?.email || 'alguém'} em {formatDateBR(task.criado_em.slice(0, 10))}
+              <p>Criado por {criador?.nome || criador?.email || 'alguém'} em {formatDateBR(task.criado_em.slice(0, 10))}</p>
+              {task.status === 'concluida' && task.concluida_em && (
+                <p className="mt-1">Concluída em {formatFullDateBR(task.concluida_em.slice(0, 10))}</p>
+              )}
             </div>
           </div>
         </SheetContent>

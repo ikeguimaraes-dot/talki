@@ -91,3 +91,19 @@ export function formatDateRangeBR(inicio: string | null, prazo: string | null): 
   }
   return `${i.day} – ${p.day} ${MESES_ABREV[p.month]}`;
 }
+
+export function formatShortDateBR(dateIso: string): string {
+  const { day, month, year } = parseIsoDate(dateIso);
+  const currentYear = new Date().getFullYear();
+  return year === currentYear ? `${day} ${MESES_ABREV[month]}` : `${day} ${MESES_ABREV[month]} ${year}`;
+}
+
+const MESES_COMPLETO = [
+  'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
+];
+
+export function formatFullDateBR(dateIso: string): string {
+  const { day, month, year } = parseIsoDate(dateIso);
+  return `${day} de ${MESES_COMPLETO[month]} de ${year}`;
+}
