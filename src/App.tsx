@@ -9,6 +9,7 @@ import { HomePage } from '@/pages/home-page';
 import { TarefasPage } from '@/pages/tarefas-page';
 import { PlanPage } from '@/pages/plan-page';
 import { MarcacoesPage } from '@/pages/marcacoes-page';
+import { CalendarioPage } from '@/pages/calendario-page';
 import { EtiquetasPage } from '@/pages/etiquetas-page';
 import { ConcluidasPage } from '@/pages/concluidas-page';
 import { ComunicadosPage } from '@/pages/comunicados-page';
@@ -59,6 +60,7 @@ function App() {
           <Route path="/tarefas" element={<TarefasPage />} />
           <Route path="/tarefas/:planId" element={<PlanPage />} />
           <Route path="/marcacoes" element={<MarcacoesPage />} />
+          <Route path="/calendario" element={<CalendarioPage />} />
           <Route path="/etiquetas" element={<EtiquetasPage />} />
           <Route path="/concluidas" element={<ConcluidasPage />} />
           <Route path="/mensagens" element={<Navigate to="/" replace />} />

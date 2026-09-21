@@ -1,4 +1,4 @@
-import { Timer, BarChart3, AtSign, CalendarDays, CheckCircle2, FolderKanban, Megaphone, Tag, type LucideIcon } from 'lucide-react';
+import { Timer, BarChart3, AtSign, CalendarDays, CalendarRange, CheckCircle2, FolderKanban, Megaphone, Tag, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   label: string;
@@ -16,6 +16,7 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const PERSPECTIVAS_ITEMS: NavItem[] = [
   { label: 'Marcações', href: '/marcacoes', icon: AtSign },
+  { label: 'Calendário', href: '/calendario', icon: CalendarRange },
   { label: 'Etiquetas', href: '/etiquetas', icon: Tag },
   { label: 'Concluídas', href: '/concluidas', icon: CheckCircle2 },
 ];
