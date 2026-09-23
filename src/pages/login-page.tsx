@@ -67,19 +67,14 @@ export function LoginPage() {
         </div>
 
         <div className="relative max-w-2xl">
-          <video
-            className="mb-6 h-[clamp(180px,28vh,280px)] w-auto max-w-full rounded-2xl object-contain"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
+          <img
+            className="mb-6 h-[clamp(180px,28vh,280px)] w-auto max-w-full object-contain"
+            src="/videos/mascote-azul.webp"
+            alt=""
             aria-hidden="true"
-            width={720}
-            height={1280}
-          >
-            <source src="/videos/mascote-azul.mp4" type="video/mp4" />
-          </video>
+            width={450}
+            height={800}
+          />
           <p className="eyebrow mb-5 text-[#aca2ff]">Seu segundo cérebro, com calma</p>
           <h1 className="gradient-text text-[clamp(3.3rem,6.2vw,6.7rem)] font-semibold leading-[0.94] tracking-[-0.075em]">
             Clareza para fazer acontecer.
