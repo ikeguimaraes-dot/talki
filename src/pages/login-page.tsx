@@ -67,14 +67,6 @@ export function LoginPage() {
         </div>
 
         <div className="relative max-w-2xl">
-          <img
-            className="mb-6 h-[clamp(180px,28vh,280px)] w-auto max-w-full object-contain"
-            src="/videos/mascote-azul.webp"
-            alt=""
-            aria-hidden="true"
-            width={450}
-            height={800}
-          />
           <p className="eyebrow mb-5 text-[#aca2ff]">Seu segundo cérebro, com calma</p>
           <h1 className="gradient-text text-[clamp(3.3rem,6.2vw,6.7rem)] font-semibold leading-[0.94] tracking-[-0.075em]">
             Clareza para fazer acontecer.
@@ -91,7 +83,15 @@ export function LoginPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center p-5 sm:p-8 lg:p-12">
+      <div className="flex flex-col items-center justify-center gap-6 p-5 sm:p-8 lg:p-12">
+        <img
+          className="hidden h-[clamp(234px,36.4vh,364px)] w-auto max-w-full shrink-0 object-contain lg:block"
+          src="/videos/mascote-azul.webp"
+          alt=""
+          aria-hidden="true"
+          width={450}
+          height={800}
+        />
       <div className="glass-panel w-full max-w-[430px] rounded-[26px] p-6 sm:p-8">
         <div className="mb-7 lg:hidden">
           <div className="flex items-center gap-2.5">
