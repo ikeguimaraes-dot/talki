@@ -1,0 +1,57 @@
+begin;
+insert into public.talki_agenda_events(id,owner_id,titulo,tipo,inicio,fim) values('00000000-0000-0000-0000-000000000090','00000000-0000-0000-0000-000000000001','Meeting','reuniao',now(),now()+interval '1 hour');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',true);
+insert into public.talki_bau_entries(id,titulo,plan_id,agenda_event_id,transcricao) values('00000000-0000-0000-0000-000000000030','Reunião','00000000-0000-0000-0000-000000000010','00000000-0000-0000-0000-000000000090','Decisões sobre orçamento');
+insert into public.talki_bau_files(id,entry_id,nome,tipo,mime,tamanho,path,texto) values('00000000-0000-0000-0000-000000000040','00000000-0000-0000-0000-000000000030','transcricao.txt','transcricao','text/plain',100,'00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000030/00000000-0000-0000-0000-000000000040','Planejamento estratégico da empresa');
+do $$ begin
+ begin perform public.talki_bau_finish_upload('00000000-0000-0000-0000-000000000040');raise exception 'Missing object finalized';exception when raise_exception then if sqlerrm='Missing object finalized' then raise;end if;end;
+ begin update public.talki_bau_files set pronto=true;raise exception 'Ready status writable';exception when insufficient_privilege then null;end;
+ begin update public.talki_bau_entries set owner_id='00000000-0000-0000-0000-000000000002';raise exception 'Ownership transfer allowed';exception when insufficient_privilege then null;end;
+ begin insert into storage.objects(bucket_id,name,metadata) values('talki-bau','arbitrary/path','{}');raise exception 'Unregistered path accepted';exception when insufficient_privilege then null;end;
+end; $$;
+insert into storage.objects(bucket_id,name,metadata) values('talki-bau','00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000030/00000000-0000-0000-0000-000000000040','{"size":100}');
+select public.talki_bau_finish_upload('00000000-0000-0000-0000-000000000040');
+do $$ begin
+ if (select count(*) from public.talki_bau_search('estratégico'))<>1 then raise exception 'Extracted content not searchable';end if;
+ if (select count(*) from public.talki_bau_search('orçamento'))<>1 then raise exception 'Pasted content not searchable';end if;
+ begin delete from public.talki_bau_files;raise exception 'Orphaned object allowed';exception when raise_exception then if sqlerrm='Orphaned object allowed' then raise;end if;end;
+end; $$;
+reset role;
+insert into public.plan_members values('00000000-0000-0000-0000-000000000010','00000000-0000-0000-0000-000000000002');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',true);
+do $$ begin
+ if exists(select 1 from public.talki_bau_entries) or exists(select 1 from public.talki_bau_files) or exists(select 1 from storage.objects) then raise exception 'Project link leaked private meeting';end if;
+ if exists(select 1 from public.talki_bau_search('estratégico')) then raise exception 'Search leaked meeting';end if;
+ begin insert into public.talki_bau_entries(titulo,agenda_event_id) values('Forbidden agenda','00000000-0000-0000-0000-000000000090');raise exception 'Private agenda linkage allowed';exception when insufficient_privilege then null;end;
+ begin perform public.talki_bau_set_sharing('00000000-0000-0000-0000-000000000030',true,'{}');raise exception 'Nonowner sharing allowed';exception when insufficient_privilege then null;end;
+end; $$;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',true);
+select public.talki_bau_set_sharing('00000000-0000-0000-0000-000000000030',true,'{}');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',true);
+do $$ declare n int;begin
+ if (select count(*) from public.talki_bau_search())<>1 or (select count(*) from storage.objects)<>1 then raise exception 'Project sharing failed';end if;
+ update public.talki_bau_entries set titulo='Hacked';get diagnostics n=row_count;if n<>0 then raise exception 'Shared reader can edit';end if;
+ delete from storage.objects;get diagnostics n=row_count;if n<>0 then raise exception 'Shared reader can delete';end if;
+ begin perform public.talki_bau_finish_upload('00000000-0000-0000-0000-000000000040');raise exception 'Reader can finalize';exception when insufficient_privilege then null;end;
+end; $$;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',true);
+select public.talki_bau_set_sharing('00000000-0000-0000-0000-000000000030',false,array['00000000-0000-0000-0000-000000000002'::uuid]);
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',true);
+do $$ begin if (select count(*) from public.talki_bau_files)<>1 then raise exception 'Individual sharing failed';end if;end; $$;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',true);
+select public.talki_bau_set_sharing('00000000-0000-0000-0000-000000000030',false,'{}');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',true);
+do $$ begin if exists(select 1 from storage.objects) or exists(select 1 from public.talki_bau_entries) then raise exception 'Revocation failed';end if;end; $$;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',true);
+delete from storage.objects;
+delete from public.talki_bau_files;
+delete from public.talki_bau_entries;
+do $$ begin if exists(select 1 from public.talki_bau_entries) then raise exception 'Owner deletion failed';end if;end; $$;
+reset role;
+set local role anon;
+do $$ begin begin perform 1 from public.talki_bau_entries;raise exception 'Anonymous read allowed';exception when insufficient_privilege then null;end;end; $$;
+reset role;
+rollback;
+select 'Bau privacy, upload metadata, file access, search, sharing and deletion: passed' as result;
