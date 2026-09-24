@@ -1,5 +1,5 @@
 export const BAU_BUCKET='talki-bau';
-export const MAX_AUDIO_BYTES=50*1024*1024;
+export const MAX_AUDIO_BYTES=2*1024*1024*1024;
 export const MAX_DOCUMENT_BYTES=20*1024*1024;
 export const MAX_TRANSCRIPT_CHARS=500000;
 const audioTypes:Record<string,string>={mp3:'audio/mpeg',m4a:'audio/mp4',mp4:'video/mp4',wav:'audio/wav',ogg:'audio/ogg',opus:'audio/ogg',webm:'audio/webm',flac:'audio/flac',aac:'audio/aac'};

@@ -8,7 +8,7 @@ for attempt in {1..30}; do
  if docker exec "$container" pg_isready -U postgres >/dev/null 2>&1; then break; fi
  sleep 1
 done
-for file in supabase/tests/profile_authorization.fixture.sql supabase/tests/jornada.fixture.sql supabase/tests/bau-storage.fixture.sql supabase/migrations/*_talki_protect_profile_authorization.sql supabase/migrations/*_talki_jornada_core.sql supabase/migrations/*_talki_agenda.sql supabase/migrations/*_talki_bau.sql; do
+for file in supabase/tests/profile_authorization.fixture.sql supabase/tests/jornada.fixture.sql supabase/tests/bau-storage.fixture.sql supabase/migrations/*_talki_protect_profile_authorization.sql supabase/migrations/*_talki_jornada_core.sql supabase/migrations/*_talki_agenda.sql supabase/migrations/*_talki_bau.sql supabase/migrations/*_talki_bau_2gb_uploads.sql; do
  docker exec -i "$container" psql -U postgres --single-transaction -v ON_ERROR_STOP=1 < "$file"
 done
 docker exec -i "$container" psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/bau.sql
