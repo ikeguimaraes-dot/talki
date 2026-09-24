@@ -9,6 +9,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Hoje', href: '/', icon: CalendarDays },
   { label: 'Projetos', href: '/tarefas', icon: FolderKanban },
+  { label: 'Agenda', href: '/agenda', icon: CalendarRange },
   { label: 'Jornada', href: '/jornada', icon: Timer },
   { label: 'Gestão da jornada', href: '/gestao', icon: BarChart3 },
   { label: 'Comunicados', href: '/comunicados', icon: Megaphone },
