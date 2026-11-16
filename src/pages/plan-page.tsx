@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { supabase } from '@/supabase';
 import { BarChart3, CalendarDays, KanbanSquare, List, ListChecks, MoreHorizontal, Sparkles, Trash2, Users } from 'lucide-react';
 import { usePageHeader } from '@/hooks/use-page-header';
 import { useCurrentUser } from '@/hooks/use-current-user';
@@ -56,7 +55,6 @@ export function PlanPage() {
   const [membersOpen, setMembersOpen] = useState(false);
   const [deletePlanOpen, setDeletePlanOpen] = useState(false);
   const [deletingPlan, setDeletingPlan] = useState(false);
-  const [savingActive, setSavingActive] = useState(false);
 
   const openTaskId = searchParams.get('tarefa');
   const openTask = (taskId: string) => setSearchParams(prev => { const next = new URLSearchParams(prev); next.set('tarefa', taskId); return next; });
@@ -121,22 +119,7 @@ export function PlanPage() {
   }
 
   const canManagePlan = isAdmin || plan.criado_por === user.id;
-  const active = plan.talki_plan_settings?.ativo !== false;
-
-  const toggleActive = async () => {
-    if (savingActive) return;
-    setSavingActive(true);
-    try {
-      const { error } = await supabase.rpc('talki_set_project_active', { p_plan_id: plan.id, p_ativo: !active });
-      if (error) throw error;
-      toast.success(active ? 'Projeto inativado.' : 'Projeto reativado.');
-      await reload();
-    } catch {
-      toast.error('Não foi possível alterar o estado do projeto.');
-    } finally {
-      setSavingActive(false);
-    }
-  };
+  const active = buckets.some(bucket => bucket.tasks.some(task => task.status !== 'concluida'));
 
   const handleDeletePlan = async () => {
     setDeletingPlan(true);
@@ -170,7 +153,6 @@ export function PlanPage() {
                   <Button variant="ghost" size="icon-sm" aria-label="Mais ações do projeto"><MoreHorizontal /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem disabled={savingActive} onClick={() => void toggleActive()}>{active ? 'Inativar projeto' : 'Reativar projeto'}</DropdownMenuItem>
                   <DropdownMenuItem variant="destructive" onClick={() => setDeletePlanOpen(true)}><Trash2 /> Excluir projeto</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

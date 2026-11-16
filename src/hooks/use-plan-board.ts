@@ -45,7 +45,7 @@ export function usePlanBoard(planId: string) {
       const [planRes, bucketsRes, labelsRes] = await Promise.all([
         supabase
           .from('plans')
-          .select('*, talki_plan_settings(ativo), plan_members(profiles(id, nome, email, avatar_url, cargo)), tasks(id, status)')
+          .select('*, plan_members(profiles(id, nome, email, avatar_url, cargo)), tasks(id, status)')
           .eq('id', planId)
           .single(),
         supabase

@@ -39,7 +39,7 @@ export function TarefasPage() {
     try {
       const { data, error: plansError } = await supabase
         .from('plans')
-        .select('*, talki_plan_settings(ativo), plan_members(profiles(id, nome, email, avatar_url)), tasks(id, status, prazo, task_checklist(feito))')
+        .select('*, plan_members(profiles(id, nome, email, avatar_url)), tasks(id, status, prazo, task_checklist(feito))')
         .order('criado_em', { ascending: false });
 
       if (plansError) throw plansError;
@@ -47,7 +47,7 @@ export function TarefasPage() {
       const typedPlans = data as unknown as PlanWithMembers[];
       setPlans(typedPlans);
 
-      const allTasks = typedPlans.filter(plan => plan.talki_plan_settings?.ativo !== false).flatMap(plan => plan.tasks);
+      const allTasks = typedPlans.flatMap(plan => plan.tasks);
       const abertas = allTasks.filter(t => t.status !== 'concluida');
 
       setCounts({
@@ -79,8 +79,8 @@ export function TarefasPage() {
   );
 
   usePageHeader({ title: 'Projetos' }, headerActions);
-  const activePlans = plans?.filter(plan => plan.talki_plan_settings?.ativo !== false) ?? [];
-  const inactivePlans = plans?.filter(plan => plan.talki_plan_settings?.ativo === false) ?? [];
+  const activePlans = plans?.filter(plan => plan.tasks.some(task => task.status !== 'concluida')) ?? [];
+  const inactivePlans = plans?.filter(plan => !plan.tasks.some(task => task.status !== 'concluida')) ?? [];
 
   return (
     <div className="space-y-8 pb-6">
@@ -103,7 +103,7 @@ export function TarefasPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base font-semibold tracking-[-0.025em]">Seus projetos</h2>
-            <p className="mt-1 text-xs text-muted-foreground">Escolha um projeto para entrar no fluxo.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Ativos têm tarefas em aberto. Inativos estão sem tarefas ou com todas concluídas.</p>
           </div>
           <span className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex">{activePlans.length} ativos <ArrowUpRight className="size-3" /></span>
         </div>
@@ -123,7 +123,7 @@ export function TarefasPage() {
               return <TabsContent key={status} value={status}>
                 {items.length === 0 ? <EmptyState icon={FolderKanban}
                   title={status === 'ativos' ? 'Nenhum projeto ativo' : 'Nenhum projeto inativo'}
-                  description={status === 'ativos' ? 'Crie um projeto para organizar as tarefas da sua equipe.' : 'Projetos inativados aparecem aqui e podem ser reativados.'}
+                  description={status === 'ativos' ? 'Crie um projeto para organizar as tarefas da sua equipe.' : 'Projetos sem tarefas ou com todas concluídas aparecem aqui. Crie ou reabra uma tarefa para torná-los ativos.'}
                   action={status === 'ativos' ? <Button onClick={() => setDialogOpen(true)}><Plus /> Novo projeto</Button> : undefined}
                 /> : <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {items.map(plan => <PlanCard key={plan.id} plan={plan} />)}
