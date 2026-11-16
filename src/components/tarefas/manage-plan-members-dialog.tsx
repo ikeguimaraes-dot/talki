@@ -58,7 +58,7 @@ export function ManagePlanMembersDialog({ open, onOpenChange, plan, buckets, onA
   const memberIds = new Set(members.map(m => m.id));
   const candidates = (allProfiles ?? [])
     .filter(p => !memberIds.has(p.id))
-    .filter(p => (p.nome || p.email || '').toLowerCase().includes(busca.trim().toLowerCase()));
+    .filter(p => `${p.nome ?? ''} ${p.email ?? ''}`.toLowerCase().includes(busca.trim().toLowerCase()));
 
   const assignedTaskCount = (userId: string) =>
     buckets.flatMap(b => b.tasks).filter(t => t.task_assignees.some(a => a.profiles.id === userId)).length;
@@ -95,7 +95,8 @@ export function ManagePlanMembersDialog({ open, onOpenChange, plan, buckets, onA
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{member.nome || member.email}</p>
+                    <p className="truncate text-sm font-medium">{member.nome || 'Sem nome'}</p>
+                    <p className="break-all text-xs text-muted-foreground">{member.email || 'E-mail não informado'}</p>
                     {member.cargo && <p className="truncate text-xs text-muted-foreground">{member.cargo}</p>}
                   </div>
                   {isCreator ? (
@@ -114,7 +115,7 @@ export function ManagePlanMembersDialog({ open, onOpenChange, plan, buckets, onA
             <p className="text-xs font-medium text-muted-foreground">Adicionar membro</p>
             <div className="relative">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome..." className="h-9 pl-8" />
+              <Input value={busca} onChange={e => setBusca(e.target.value)} aria-label="Buscar membro por nome ou e-mail" placeholder="Buscar por nome ou e-mail..." className="h-9 pl-8" />
             </div>
             <div className="max-h-48 space-y-1 overflow-y-auto">
               {candidates.map(profile => (
@@ -130,7 +131,8 @@ export function ManagePlanMembersDialog({ open, onOpenChange, plan, buckets, onA
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm">{profile.nome || profile.email}</p>
+                    <p className="truncate text-sm">{profile.nome || 'Sem nome'}</p>
+                    <p className="break-all text-xs text-muted-foreground">{profile.email || 'E-mail não informado'}</p>
                     {profile.cargo && <p className="truncate text-xs text-muted-foreground">{profile.cargo}</p>}
                   </div>
                   <UserPlus className="size-4 text-muted-foreground" />

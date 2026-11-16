@@ -1,0 +1,11 @@
+create role anon;
+create role authenticated;
+create role service_role bypassrls;
+create schema auth;
+create schema talki_private;
+grant usage on schema public,auth,talki_private to service_role,authenticated;
+create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+create table public.profiles(id uuid primary key);
+create table public.plans(id uuid primary key);
+create function public.is_plan_member(uuid) returns boolean language sql as $$ select false $$;
+insert into profiles values('11111111-1111-1111-1111-111111111111'),('22222222-2222-2222-2222-222222222222');

@@ -84,6 +84,7 @@ export interface BucketWithTasks extends Bucket {
 }
 
 export interface PlanWithMembers extends Plan {
+  talki_plan_settings?: { ativo: boolean } | null;
   plan_members: { profiles: AssigneeProfile }[];
   tasks: { id: string; status: string; prazo: string | null; task_checklist?: { feito: boolean }[] }[];
 }

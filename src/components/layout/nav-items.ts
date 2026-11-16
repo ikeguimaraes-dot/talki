@@ -1,4 +1,4 @@
-import { Archive, Timer, BarChart3, AtSign, CalendarDays, CalendarRange, CheckCircle2, FolderKanban, Megaphone, Tag, type LucideIcon } from 'lucide-react';
+import { Columns3, Archive, Timer, BarChart3, AtSign, CalendarDays, CalendarRange, CheckCircle2, FolderKanban, Megaphone, NotebookPen, Tag, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   label: string;
@@ -9,7 +9,9 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Hoje', href: '/', icon: CalendarDays },
   { label: 'Projetos', href: '/tarefas', icon: FolderKanban },
+  { label: 'Kanban', href: '/kanban', icon: Columns3 },
   { label: 'Agenda', href: '/agenda', icon: CalendarRange },
+  { label: 'Bloco de notas', href: '/notas', icon: NotebookPen },
   { label: 'Baú', href: '/bau', icon: Archive },
   { label: 'Jornada', href: '/jornada', icon: Timer },
   { label: 'Gestão da jornada', href: '/gestao', icon: BarChart3 },

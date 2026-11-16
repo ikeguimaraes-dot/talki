@@ -1,6 +1,7 @@
+import { formatDateTimeBR } from '@/lib/date';
 import { Calendar, CheckCircle2, ListChecks, MoreHorizontal, Palette } from 'lucide-react';
 import { checklistToneClass, cn, stripMarkdown } from '@/lib/utils';
-import { checklistPercentTone, formatDateRangeBR, formatShortDateBR, isOverdue, isToday } from '@/lib/date';
+import { checklistPercentTone, formatDateRangeBR, isOverdue, isToday } from '@/lib/date';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,7 +33,7 @@ export function TaskCardContent({ task, onToggleDone, onChangeColor }: TaskCardC
   const done = task.status === 'concluida';
   const descricaoPreview = task.descricao ? stripMarkdown(task.descricao) : '';
   const dateRange = formatDateRangeBR(task.inicio, task.prazo);
-  const concluidaEmLabel = done && task.concluida_em ? formatShortDateBR(task.concluida_em.slice(0, 10)) : null;
+  const concluidaEmLabel = done && task.concluida_em ? formatDateTimeBR(task.concluida_em) : null;
   const checklistPercentClass = checklistTotal > 0 ? checklistToneClass(checklistPercentTone(task.status, task.prazo)) : '';
 
   return (

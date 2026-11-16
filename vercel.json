@@ -1,5 +1,31 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/bau-transcribe.mjs": {
+      "maxDuration": 300,
+      "includeFiles": "node_modules/ffmpeg-static/ffmpeg"
+    },
+    "api/google-calendar.mjs": {
+      "maxDuration": 300
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/bau-transcribe",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/google-calendar?action=cron",
+      "schedule": "*/5 * * * *"
+    }
   ]
 }

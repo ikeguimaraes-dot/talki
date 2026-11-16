@@ -21,14 +21,14 @@ function deriveChecklistStatusPatch(checklist: ChecklistItem[], currentStatus: s
 }
 
 const TASK_SELECT = `
-  id, plan_id, bucket_id, titulo, descricao, prioridade, status, prazo, inicio, ordem, cor, criado_por, criado_em, concluida_em,
+  id, plan_id, bucket_id, titulo, descricao, prioridade, status, kanban_status, prazo, inicio, inicio_hora, prazo_hora, ordem, cor, criado_por, criado_em, concluida_em,
   task_assignees(profiles!task_assignees_user_id_fkey(id, nome, email, avatar_url, cargo)),
-  task_checklist(id, task_id, texto, feito, ordem),
+  task_checklist(id, task_id, texto, feito, ordem, inicio, inicio_hora, prazo, prazo_hora, concluida_em),
   task_label_links(task_labels(id, nome, cor, plan_id))
 `;
 
 type TaskFieldsPatch = Partial<
-  Pick<Task, 'titulo' | 'descricao' | 'status' | 'prioridade' | 'inicio' | 'prazo' | 'concluida_em' | 'ordem' | 'cor'>
+  Pick<Task, 'inicio_hora' | 'prazo_hora' | 'titulo' | 'descricao' | 'kanban_status' | 'status' | 'prioridade' | 'inicio' | 'prazo' | 'concluida_em' | 'ordem' | 'cor'>
 >;
 
 export function usePlanBoard(planId: string) {
@@ -45,7 +45,7 @@ export function usePlanBoard(planId: string) {
       const [planRes, bucketsRes, labelsRes] = await Promise.all([
         supabase
           .from('plans')
-          .select('*, plan_members(profiles(id, nome, email, avatar_url, cargo)), tasks(id, status)')
+          .select('*, talki_plan_settings(ativo), plan_members(profiles(id, nome, email, avatar_url, cargo)), tasks(id, status)')
           .eq('id', planId)
           .single(),
         supabase
@@ -125,33 +125,34 @@ export function usePlanBoard(planId: string) {
     return true;
   }, [buckets]);
 
-  const createTask = useCallback(async (bucketId: string, titulo: string, criadoPor: string) => {
+  const createTask = useCallback(async (bucketId: string, titulo: string) => {
     const bucket = buckets.find(b => b.id === bucketId);
     if (!bucket) return null;
-    const ordem = bucket.tasks.length;
-
-    const { data, error: insertError } = await supabase
-      .from('tasks')
-      .insert({ plan_id: planId, bucket_id: bucketId, titulo, criado_por: criadoPor, ordem })
-      .select(TASK_SELECT)
-      .single();
+    const { data: taskId, error: insertError } = await supabase.rpc('talki_create_project_task', {
+      p_bucket_id: bucketId, p_titulo: titulo,
+    });
 
     if (insertError) {
       toast.error('Não foi possível criar a tarefa.');
       return null;
     }
 
+    const { data, error: readError } = await supabase.from('tasks').select(TASK_SELECT).eq('id', taskId).single();
+    if (readError) {
+      toast.error('Tarefa criada. Recarregue o projeto para visualizá-la.');
+      return null;
+    }
     const task = data as unknown as TaskWithRelations;
     setBuckets(prev => prev.map(b => (b.id === bucketId ? { ...b, tasks: [...b.tasks, task] } : b)));
     return task;
-  }, [planId, buckets]);
+  }, [buckets]);
 
   const toggleTaskDone = useCallback(async (taskId: string, done: boolean) => {
     const status = done ? 'concluida' : 'nao_iniciada';
     const concluida_em = done ? new Date().toISOString() : null;
-    updateTaskInState(taskId, { status, concluida_em });
-    const { error: updateError } = await supabase.from('tasks').update({ status, concluida_em }).eq('id', taskId);
-    if (updateError) toast.error('Não foi possível atualizar a tarefa.');
+    const { data, error } = await supabase.from('tasks').update({ status, concluida_em }).eq('id', taskId).select('status, concluida_em').single();
+    if (error) { toast.error('Não foi possível atualizar a tarefa.'); return; }
+    updateTaskInState(taskId, data);
   }, [updateTaskInState]);
 
   const persistTasksOrder = useCallback(async (affectedBucketIds: string[]) => {
@@ -165,10 +166,19 @@ export function usePlanBoard(planId: string) {
   }, [buckets]);
 
   const updateTaskFields = useCallback(async (taskId: string, patch: TaskFieldsPatch) => {
-    updateTaskInState(taskId, patch);
-    const { error: updateError } = await supabase.from('tasks').update(patch).eq('id', taskId);
-    if (updateError) toast.error('Não foi possível salvar a alteração.');
-    return !updateError;
+    if ('kanban_status' in patch) {
+      const { error: saveError } = await supabase.rpc('talki_set_task_kanban', { p_task_id: taskId, p_column: patch.kanban_status ?? null });
+      if (saveError) { toast.error('Não foi possível salvar a coluna do Kanban.'); return false; }
+      const { data, error } = await supabase.from('tasks').select(TASK_SELECT).eq('id', taskId).single();
+      if (error) { toast.error('Não foi possível salvar a coluna do Kanban.'); return false; }
+      updateTaskInState(taskId, data as unknown as TaskWithRelations);
+      toast.success('Coluna do Kanban salva.');
+      return true;
+    }
+    const { data, error } = await supabase.from('tasks').update(patch).eq('id', taskId).select().single();
+    if (error) { toast.error('Não foi possível salvar a alteração.'); return false; }
+    updateTaskInState(taskId, data);
+    return true;
   }, [updateTaskInState]);
 
   const moveTaskToBucket = useCallback(async (taskId: string, toBucketId: string) => {
@@ -190,7 +200,8 @@ export function usePlanBoard(planId: string) {
   }, [findTask, persistTasksOrder]);
 
   const setTaskAssignees = useCallback(async (taskId: string, userIds: string[], assignedBy: string) => {
-    const memberProfiles = plan?.plan_members.map(m => m.profiles) ?? [];
+    const memberProfiles = [...(plan?.plan_members.map(m => m.profiles) ?? []),
+      ...(findTask(taskId)?.task_assignees.map(a => a.profiles) ?? [])];
     const resolved = userIds
       .map(id => memberProfiles.find(p => p.id === id))
       .filter((p): p is NonNullable<typeof p> => !!p);
@@ -297,35 +308,42 @@ export function usePlanBoard(planId: string) {
     return data;
   }, [planId]);
 
-  const addChecklistItem = useCallback(async (taskId: string, texto: string) => {
+  const addChecklistItem = useCallback(async (taskId: string, texto: string, schedule: Partial<Pick<ChecklistItem, 'inicio' | 'inicio_hora' | 'prazo' | 'prazo_hora'>> = {}) => {
     const task = findTask(taskId);
     const ordem = task?.task_checklist.length ?? 0;
 
     const { data, error: insertError } = await supabase
       .from('task_checklist')
-      .insert({ task_id: taskId, texto, ordem })
+      .insert({ task_id: taskId, texto, ordem, inicio: task?.inicio, inicio_hora: task?.inicio_hora, ...schedule })
       .select()
       .single();
 
     if (insertError || !data) {
       toast.error('Não foi possível adicionar o item.');
-      return;
+      return false;
     }
 
     const nextChecklist = [...(task?.task_checklist ?? []), data];
     const statusPatch = task ? deriveChecklistStatusPatch(nextChecklist, task.status) : null;
     updateTaskInState(taskId, { task_checklist: nextChecklist, ...statusPatch });
+    return true;
   }, [findTask, updateTaskInState]);
 
   const toggleChecklistItem = useCallback(async (taskId: string, itemId: string, feito: boolean) => {
     const task = findTask(taskId);
     if (!task) return;
-    const nextChecklist = task.task_checklist.map(i => (i.id === itemId ? { ...i, feito } : i));
-    const statusPatch = deriveChecklistStatusPatch(nextChecklist, task.status);
-    updateTaskInState(taskId, { task_checklist: nextChecklist, ...statusPatch });
-    const { error: updateError } = await supabase.from('task_checklist').update({ feito }).eq('id', itemId);
-    if (updateError) toast.error('Não foi possível atualizar o item.');
+    const { data, error } = await supabase.from('task_checklist').update({ feito }).eq('id', itemId).select().single();
+    if (error) { toast.error('Não foi possível atualizar o item.'); return; }
+    const nextChecklist = task.task_checklist.map(i => i.id === itemId ? data : i);
+    const { data: parent } = await supabase.from('tasks').select('status, concluida_em').eq('id', taskId).single();
+    updateTaskInState(taskId, { task_checklist: nextChecklist, ...(parent ?? {}) });
   }, [findTask, updateTaskInState]);
+
+  const scheduleChecklistItem = useCallback(async (taskId: string, itemId: string, patch: Partial<Pick<ChecklistItem, 'inicio' | 'inicio_hora' | 'prazo' | 'prazo_hora'>>) => {
+    const { data, error } = await supabase.from('task_checklist').update(patch).eq('id', itemId).select().single();
+    if (error) { toast.error('Não foi possível salvar a data do item.'); return; }
+    setBuckets(previous => previous.map(bucket => ({ ...bucket, tasks: bucket.tasks.map(task => task.id === taskId ? { ...task, task_checklist: task.task_checklist.map(item => item.id === itemId ? data : item) } : task) })));
+  }, []);
 
   const editChecklistItem = useCallback(async (taskId: string, itemId: string, texto: string) => {
     const task = findTask(taskId);
@@ -368,6 +386,8 @@ export function usePlanBoard(planId: string) {
         descricao: task.descricao,
         prioridade: task.prioridade,
         inicio: task.inicio,
+        inicio_hora: task.inicio_hora,
+        prazo_hora: task.prazo_hora,
         prazo: task.prazo,
         criado_por: task.criado_por,
         ordem,
@@ -459,6 +479,7 @@ export function usePlanBoard(planId: string) {
     setTaskLabels,
     createLabel,
     addChecklistItem,
+    scheduleChecklistItem,
     toggleChecklistItem,
     editChecklistItem,
     deleteChecklistItem,

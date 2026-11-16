@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Square, Timer } from 'lucide-react';
+import { Pause, Square, Timer } from 'lucide-react';
 import { toast } from 'sonner';
 import { jornadaDb,rpc,type Registro } from '@/lib/jornada';
 import { clock } from '@/lib/jornada-metrics';
@@ -23,6 +23,7 @@ export function TimerBar({userId}:{userId:string}) {
    <Timer className="size-4 text-primary"/>
    <Link to="/jornada" className="min-w-0 flex-1 truncate text-sm">{record.descricao}</Link>
    <span className="font-mono text-sm tabular-nums">{clock((now-Date.parse(record.inicio))/1000)}</span>
+   <Button size="sm" variant="outline" disabled={busy} aria-label={`Pausar ${record.descricao}`} onClick={async()=>{setBusy(true);try{await rpc('talki_jornada_save',{p_action:'pause',p_data:{id:record.id}});toast.success(`${record.descricao} foi pausada.`);}catch(e){toast.error(e instanceof Error?e.message:'Erro ao pausar');}finally{setBusy(false);}}}><Pause/>Pausar</Button>
    <Button size="sm" variant="secondary" disabled={busy} aria-label={`Encerrar ${record.descricao}`} onClick={async()=>{setBusy(true);try{await rpc('talki_jornada_save',{p_action:'finish',p_data:{id:record.id}});}catch(e){toast.error(e instanceof Error?e.message:'Erro ao encerrar');}finally{setBusy(false);}}}><Square/>Encerrar</Button>
   </div>)}
  </div>;

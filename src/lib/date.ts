@@ -107,3 +107,7 @@ export function formatFullDateBR(dateIso: string): string {
   const { day, month, year } = parseIsoDate(dateIso);
   return `${day} de ${MESES_COMPLETO[month]} de ${year}`;
 }
+
+export function formatDateTimeBR(value: string): string {
+  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date(value));
+}

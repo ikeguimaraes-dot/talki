@@ -1,0 +1,52 @@
+{
+  "name": "talki-mini",
+  "version": "0.1.0",
+  "description": "Suas tarefas sempre por perto",
+  "author": "Talki",
+  "private": true,
+  "type": "module",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test *.test.cjs",
+    "pack": "electron-builder --dir",
+    "dist:mac": "electron-builder --mac dmg --arm64 --x64 --publish never",
+    "dist:win": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3",
+    "sharp": "0.35.5"
+  },
+  "build": {
+    "appId": "br.com.freneze.talki.mini",
+    "productName": "Talki Mini",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "navigation.cjs",
+      "offline.html",
+      "assets/**"
+    ],
+    "artifactName": "Talki-Mini-${version}-${os}-${arch}.${ext}",
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": "dmg",
+      "icon": "assets/icon.png",
+      "identity": "-"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.png",
+      "signExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
+  }
+}

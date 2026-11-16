@@ -31,6 +31,10 @@ do $$ declare r public.talki_registros; first_r public.talki_registros; n int; b
  -- Reopening and editing overlapping activities must be allowed.
  r:=public.talki_jornada_save('edit',jsonb_build_object('id',r.id,'descricao','Reopened','categoria_id',r.categoria_id,'inicio',r.inicio));
  if r.fim is not null or (select count(*) from public.talki_registros where fim is null)<>5 then raise exception 'Overlapping edit failed'; end if;
+ perform public.talki_jornada_save('pause',jsonb_build_object('id',r.id));
+ if (select fim from public.talki_registros where id=r.id) is null then raise exception 'Individual pause left selected timer open'; end if;
+ if (select count(*) from public.talki_registros where fim is null and descricao<>'Pausa')<>4 then raise exception 'Individual pause affected other timers'; end if;
+ if (select count(*) from public.talki_registros where fim is null and descricao='Pausa')<>1 then raise exception 'Individual pause did not start pause timer'; end if;
  begin
   perform public.talki_jornada_save('pause',jsonb_build_object('descricao','Invalid pause','categoria_id','00000000-0000-0000-0000-000000000099'));
   raise exception 'Bad pause accepted';

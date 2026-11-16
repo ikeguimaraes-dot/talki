@@ -1,3 +1,4 @@
+import { Input } from '@/components/ui/input';
 import { Calendar as CalendarIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -5,6 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { formatDateBR } from '@/lib/date';
 
 interface DateFieldProps {
+  time?: string | null;
+  onTimeChange?: (value: string | null) => void;
   label: string;
   value: string | null;
   onChange: (value: string | null) => void;
@@ -22,7 +25,7 @@ function toIsoDateOnly(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-export function DateField({ label, value, onChange }: DateFieldProps) {
+export function DateField({ label, value, onChange, time, onTimeChange }: DateFieldProps) {
   return (
     <div className="space-y-1.5">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
@@ -48,6 +51,7 @@ export function DateField({ label, value, onChange }: DateFieldProps) {
           )}
         </PopoverContent>
       </Popover>
+      {onTimeChange && <Input type="time" aria-label={`Horário de ${label.toLowerCase()}`} value={time?.slice(0, 5) ?? ''} disabled={!value} onChange={e => onTimeChange(e.target.value || null)} className="h-8" />}
     </div>
   );
 }

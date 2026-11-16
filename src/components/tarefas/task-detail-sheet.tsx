@@ -1,3 +1,4 @@
+import { KanbanSelect } from '@/components/tarefas/kanban-select';
 import { TaskTime } from '@/components/jornada/task-time';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -32,7 +33,7 @@ import { ChecklistSection } from '@/components/tarefas/checklist-section';
 import { CommentsSection } from '@/components/tarefas/comments-section';
 import { MoveToPlanDialog } from '@/components/tarefas/move-to-plan-dialog';
 import { CORES_TAREFA, COR_TAREFA_LABEL, COR_TAREFA_VAR, PRIORIDADE_LABEL, PRIORIDADES, STATUS_LABEL, STATUS_TAREFA, type TaskCommentWithProfile } from '@/lib/types';
-import { formatDateBR, formatFullDateBR } from '@/lib/date';
+import { formatDateBR, formatDateTimeBR } from '@/lib/date';
 
 interface TaskDetailSheetProps {
   taskId: string | null;
@@ -66,7 +67,10 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
 
   if (!task) return null;
 
-  const members = board.plan?.plan_members.map(m => m.profiles) ?? [];
+  const members = Array.from(new Map([
+    ...(board.plan?.plan_members.map(m => m.profiles) ?? []),
+    ...task.task_assignees.map(a => a.profiles),
+  ].map(profile => [profile.id, profile])).values());
   const criador = members.find(p => p.id === task.criado_por);
   const canManageAssignees = isAdmin || board.plan?.criado_por === currentUser.id || task.criado_por === currentUser.id;
 
@@ -101,16 +105,19 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
       <Sheet open={open} onOpenChange={next => !next && onOpenChange(false)}>
         <SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-xl">
           <SheetHeader className="gap-2 border-b border-border px-6 py-5 pr-12">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-end justify-between gap-2">
               <SheetTitle className="sr-only">Detalhe da tarefa</SheetTitle>
-          {task && <TaskTime taskId={task.id}/>}
-          {task && <Button asChild variant="outline" className="mt-3"><Link to={`/jornada?tarefa=${task.id}`}>Iniciar atividade nesta tarefa</Link></Button>}
-              <Input
-                value={titulo.value}
-                onChange={e => titulo.onChange(e.target.value)}
-                className="h-10 border-none bg-transparent px-0 text-xl font-semibold tracking-[-0.035em] shadow-none focus-visible:ring-0"
-                placeholder="Título da tarefa"
-              />
+              <label className="min-w-0 flex-1 space-y-1.5">
+                <span className="text-xs font-medium text-muted-foreground">Nome da tarefa</span>
+                <Input
+                  value={titulo.value}
+                  onChange={e => titulo.onChange(e.target.value)}
+                  maxLength={300}
+                  className="h-11 text-lg font-semibold tracking-[-0.025em]"
+                  placeholder="Nome da tarefa"
+                  aria-label="Nome da tarefa"
+                />
+              </label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon-sm" aria-label="Mais ações"><MoreHorizontal /></Button>
@@ -124,6 +131,10 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
             </div>
             <SheetDescription className="sr-only">Editar detalhes, checklist e comentários da tarefa</SheetDescription>
             <SavedIndicator status={titulo.status === 'idle' ? descricao.status : titulo.status} />
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <TaskTime taskId={task.id}/>
+              <Button asChild variant="outline" size="sm"><Link to={`/jornada?tarefa=${task.id}`}>Iniciar atividade nesta tarefa</Link></Button>
+            </div>
           </SheetHeader>
 
           <div className="space-y-6 px-6 py-5">
@@ -172,8 +183,13 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
                 </Select>
               </div>
 
-              <DateField label="Início" value={task.inicio} onChange={v => board.updateTaskFields(task.id, { inicio: v })} />
-              <DateField label="Prazo" value={task.prazo} onChange={v => board.updateTaskFields(task.id, { prazo: v })} />
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground">Kanban</p>
+                <KanbanSelect value={task.kanban_status} onChange={value => board.updateTaskFields(task.id, { kanban_status: value })} />
+              </div>
+
+              <DateField label="Início" time={task.inicio_hora} onTimeChange={inicio_hora => board.updateTaskFields(task.id, { inicio_hora })} value={task.inicio} onChange={v => board.updateTaskFields(task.id, { inicio: v, ...(!v ? { inicio_hora: null } : {}) })} />
+              <DateField label="Prazo" time={task.prazo_hora} onTimeChange={prazo_hora => board.updateTaskFields(task.id, { prazo_hora })} value={task.prazo} onChange={v => board.updateTaskFields(task.id, { prazo: v, ...(!v ? { prazo_hora: null } : {}) })} />
             </div>
 
             <div className="space-y-1.5">
@@ -232,10 +248,14 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
             </div>
 
             <ChecklistSection
+              key={task.id}
+              inicio={task.inicio}
+              inicioHora={task.inicio_hora}
+              onSchedule={(itemId, patch) => board.scheduleChecklistItem(task.id, itemId, patch)}
               items={task.task_checklist}
               status={task.status}
               prazo={task.prazo}
-              onAdd={texto => board.addChecklistItem(task.id, texto)}
+              onAdd={(texto, schedule) => board.addChecklistItem(task.id, texto, schedule)}
               onToggle={(itemId, feito) => board.toggleChecklistItem(task.id, itemId, feito)}
               onEdit={(itemId, texto) => board.editChecklistItem(task.id, itemId, texto)}
               onDelete={itemId => board.deleteChecklistItem(task.id, itemId)}
@@ -247,7 +267,7 @@ export function TaskDetailSheet({ taskId, onOpenChange, board, isAdmin, onManage
             <div className="border-t border-border pt-3 text-xs text-muted-foreground">
               <p>Criado por {criador?.nome || criador?.email || 'alguém'} em {formatDateBR(task.criado_em.slice(0, 10))}</p>
               {task.status === 'concluida' && task.concluida_em && (
-                <p className="mt-1">Concluída em {formatFullDateBR(task.concluida_em.slice(0, 10))}</p>
+                <p className="mt-1">Concluída em {formatDateTimeBR(task.concluida_em)}</p>
               )}
             </div>
           </div>

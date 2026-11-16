@@ -8,7 +8,7 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { EmptyState } from '@/components/state/empty-state';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { formatDateBR, completionPeriodLabel } from '@/lib/date';
+import { formatDateTimeBR, completionPeriodLabel } from '@/lib/date';
 
 const BATCH_SIZE = 30;
 const PERIODOS = ['Hoje', 'Esta semana', 'Este mês', 'Mais antigas'];
@@ -178,7 +178,7 @@ export function ConcluidasPage() {
                         <span className="size-1.5 rounded-full" style={{ backgroundColor: task.planCor }} />
                         <span className="truncate">{task.planNome}</span>
                         <span>·</span>
-                        <span>{formatDateBR(task.concluidaEm.slice(0, 10))}</span>
+                        <span>{formatDateTimeBR(task.concluidaEm)}</span>
                         {task.labels.map(label => (
                           <span
                             key={label.id}

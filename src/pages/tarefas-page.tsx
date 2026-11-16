@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/state/empty-state';
 import { ErrorState } from '@/components/state/error-state';
 import { CardGridSkeleton } from '@/components/state/page-skeleton';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { StatTile } from '@/components/tarefas/stat-tile';
 import { PlanCard } from '@/components/tarefas/plan-card';
 import { CreatePlanDialog } from '@/components/tarefas/create-plan-dialog';
@@ -30,6 +31,7 @@ export function TarefasPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [statusTab, setStatusTab] = useState('ativos');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -37,7 +39,7 @@ export function TarefasPage() {
     try {
       const { data, error: plansError } = await supabase
         .from('plans')
-        .select('*, plan_members(profiles(id, nome, email, avatar_url)), tasks(id, status, prazo, task_checklist(feito))')
+        .select('*, talki_plan_settings(ativo), plan_members(profiles(id, nome, email, avatar_url)), tasks(id, status, prazo, task_checklist(feito))')
         .order('criado_em', { ascending: false });
 
       if (plansError) throw plansError;
@@ -45,7 +47,7 @@ export function TarefasPage() {
       const typedPlans = data as unknown as PlanWithMembers[];
       setPlans(typedPlans);
 
-      const allTasks = typedPlans.flatMap(plan => plan.tasks);
+      const allTasks = typedPlans.filter(plan => plan.talki_plan_settings?.ativo !== false).flatMap(plan => plan.tasks);
       const abertas = allTasks.filter(t => t.status !== 'concluida');
 
       setCounts({
@@ -77,6 +79,8 @@ export function TarefasPage() {
   );
 
   usePageHeader({ title: 'Projetos' }, headerActions);
+  const activePlans = plans?.filter(plan => plan.talki_plan_settings?.ativo !== false) ?? [];
+  const inactivePlans = plans?.filter(plan => plan.talki_plan_settings?.ativo === false) ?? [];
 
   return (
     <div className="space-y-8 pb-6">
@@ -101,26 +105,32 @@ export function TarefasPage() {
             <h2 className="text-base font-semibold tracking-[-0.025em]">Seus projetos</h2>
             <p className="mt-1 text-xs text-muted-foreground">Escolha um projeto para entrar no fluxo.</p>
           </div>
-          <span className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex">{plans?.length ?? 0} ativos <ArrowUpRight className="size-3" /></span>
+          <span className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex">{activePlans.length} ativos <ArrowUpRight className="size-3" /></span>
         </div>
 
         {loading ? (
           <CardGridSkeleton />
         ) : error ? (
           <ErrorState message="Não foi possível carregar seus projetos." onRetry={load} />
-        ) : !plans || plans.length === 0 ? (
-          <EmptyState
-            icon={FolderKanban}
-            title="Nenhum projeto ainda"
-            description="Crie um projeto pra começar a organizar as tarefas da sua equipe."
-            action={<Button onClick={() => setDialogOpen(true)}><Plus /> Novo projeto</Button>}
-          />
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {plans.map(plan => (
-              <PlanCard key={plan.id} plan={plan} />
-            ))}
-          </div>
+          <Tabs value={statusTab} onValueChange={setStatusTab}>
+            <TabsList aria-label="Estado dos projetos">
+              <TabsTrigger value="ativos">Ativos ({activePlans.length})</TabsTrigger>
+              <TabsTrigger value="inativos">Inativos ({inactivePlans.length})</TabsTrigger>
+            </TabsList>
+            {(['ativos', 'inativos'] as const).map(status => {
+              const items = status === 'ativos' ? activePlans : inactivePlans;
+              return <TabsContent key={status} value={status}>
+                {items.length === 0 ? <EmptyState icon={FolderKanban}
+                  title={status === 'ativos' ? 'Nenhum projeto ativo' : 'Nenhum projeto inativo'}
+                  description={status === 'ativos' ? 'Crie um projeto para organizar as tarefas da sua equipe.' : 'Projetos inativados aparecem aqui e podem ser reativados.'}
+                  action={status === 'ativos' ? <Button onClick={() => setDialogOpen(true)}><Plus /> Novo projeto</Button> : undefined}
+                /> : <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {items.map(plan => <PlanCard key={plan.id} plan={plan} />)}
+                </div>}
+              </TabsContent>;
+            })}
+          </Tabs>
         )}
       </section>
 

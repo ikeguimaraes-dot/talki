@@ -2,7 +2,8 @@ begin;
 insert into public.talki_agenda_events(id,owner_id,titulo,tipo,inicio,fim) values('00000000-0000-0000-0000-000000000090','00000000-0000-0000-0000-000000000001','Meeting','reuniao',now(),now()+interval '1 hour');
 set local role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',true);
-insert into public.talki_bau_entries(id,titulo,plan_id,agenda_event_id,transcricao) values('00000000-0000-0000-0000-000000000030','Reunião','00000000-0000-0000-0000-000000000010','00000000-0000-0000-0000-000000000090','Decisões sobre orçamento');
+-- Match the application's .insert(...).select('id').single(), including RETURNING.
+insert into public.talki_bau_entries(id,titulo,plan_id,agenda_event_id,transcricao) values('00000000-0000-0000-0000-000000000030','Reunião','00000000-0000-0000-0000-000000000010','00000000-0000-0000-0000-000000000090','Decisões sobre orçamento') returning id;
 insert into public.talki_bau_files(id,entry_id,nome,tipo,mime,tamanho,path,texto) values('00000000-0000-0000-0000-000000000040','00000000-0000-0000-0000-000000000030','transcricao.txt','transcricao','text/plain',100,'00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000030/00000000-0000-0000-0000-000000000040','Planejamento estratégico da empresa');
 do $$ begin
  begin perform public.talki_bau_finish_upload('00000000-0000-0000-0000-000000000040');raise exception 'Missing object finalized';exception when raise_exception then if sqlerrm='Missing object finalized' then raise;end if;end;

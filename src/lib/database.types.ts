@@ -47,6 +47,41 @@ export type Database = {
         }
         Relationships: []
       }
+      talki_notes: {
+        Row: {
+          conteudo: string
+          created_at: string
+          id: string
+          owner_id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          conteudo?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talki_notes_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           cor: string
@@ -143,6 +178,8 @@ export type Database = {
       }
       tasks: {
         Row: {
+          inicio_hora: string | null
+          prazo_hora: string | null
           bucket_id: string
           concluida_em: string | null
           cor: string | null
@@ -155,10 +192,13 @@ export type Database = {
           plan_id: string
           prazo: string | null
           prioridade: string
+          kanban_status: string | null
           status: string
           titulo: string
         }
         Insert: {
+          inicio_hora?: string | null
+          prazo_hora?: string | null
           bucket_id: string
           concluida_em?: string | null
           cor?: string | null
@@ -171,10 +211,13 @@ export type Database = {
           plan_id: string
           prazo?: string | null
           prioridade?: string
+          kanban_status?: string | null
           status?: string
           titulo: string
         }
         Update: {
+          inicio_hora?: string | null
+          prazo_hora?: string | null
           bucket_id?: string
           concluida_em?: string | null
           cor?: string | null
@@ -187,6 +230,7 @@ export type Database = {
           plan_id?: string
           prazo?: string | null
           prioridade?: string
+          kanban_status?: string | null
           status?: string
           titulo?: string
         }
@@ -259,6 +303,11 @@ export type Database = {
       }
       task_checklist: {
         Row: {
+          inicio: string | null
+          inicio_hora: string | null
+          prazo: string | null
+          prazo_hora: string | null
+          concluida_em: string | null
           feito: boolean
           id: string
           ordem: number
@@ -266,6 +315,11 @@ export type Database = {
           texto: string
         }
         Insert: {
+          inicio?: string | null
+          inicio_hora?: string | null
+          prazo?: string | null
+          prazo_hora?: string | null
+          concluida_em?: string | null
           feito?: boolean
           id?: string
           ordem?: number
@@ -273,6 +327,11 @@ export type Database = {
           texto: string
         }
         Update: {
+          inicio?: string | null
+          inicio_hora?: string | null
+          prazo?: string | null
+          prazo_hora?: string | null
+          concluida_em?: string | null
           feito?: boolean
           id?: string
           ordem?: number
@@ -467,6 +526,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      talki_set_task_kanban: { Args: { p_task_id: string; p_column: string | null }; Returns: undefined }
+      talki_create_project_task: { Args: { p_bucket_id: string; p_titulo: string }; Returns: string }
+      talki_set_project_active: { Args: { p_plan_id: string; p_ativo: boolean }; Returns: undefined }
+      talki_mini_create_task: { Args: { p_id: string; p_bucket_id: string; p_titulo: string; p_inicio?: string | null; p_prazo?: string | null; p_prazo_hora?: string | null }; Returns: string }
       accept_plan_invite: { Args: { p_token: string }; Returns: string }
       get_plan_invite: {
         Args: { p_token: string }

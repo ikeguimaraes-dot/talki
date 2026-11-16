@@ -1,6 +1,8 @@
 export const AGENDA_TIMEZONE = 'America/Sao_Paulo';
-export type AgendaKind = 'reuniao' | 'entrega';
+export type AgendaKind = 'reuniao' | 'entrega' | 'tarefa';
 export interface AgendaEvent {
+ google_linked?: boolean; google_read_only?: boolean; google_calendar_id?: string | null;
+ google_color?: string; google_calendar_label?: string;
  id: string; owner_id: string; plan_id: string | null; titulo: string; descricao: string;
  tipo: AgendaKind; inicio: string; fim: string; dia_inteiro: boolean;
  local: string; link: string; created_at: string; updated_at: string;
@@ -8,6 +10,7 @@ export interface AgendaEvent {
 export const EVENT_KINDS = {
  reuniao: { label: 'Reunião', plural: 'Reuniões', color: '#8b7bff', className: 'border-violet-400/40 bg-violet-500/20 text-foreground' },
  entrega: { label: 'Entrega', plural: 'Entregas', color: '#34d399', className: 'border-emerald-400/40 bg-emerald-500/20 text-foreground' },
+ tarefa: { label: 'Tarefa', plural: 'Tarefas', color: '#f59e0b', className: 'border-amber-400/40 bg-amber-500/20 text-foreground' },
 };
 export function agendaDay(value: string | Date = new Date()): string {
  return new Intl.DateTimeFormat('en-CA', {timeZone: AGENDA_TIMEZONE, year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date(value));

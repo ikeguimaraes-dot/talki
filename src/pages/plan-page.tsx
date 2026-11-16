@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/supabase';
 import { BarChart3, CalendarDays, KanbanSquare, List, ListChecks, MoreHorizontal, Sparkles, Trash2, Users } from 'lucide-react';
 import { usePageHeader } from '@/hooks/use-page-header';
 import { useCurrentUser } from '@/hooks/use-current-user';
@@ -55,6 +56,7 @@ export function PlanPage() {
   const [membersOpen, setMembersOpen] = useState(false);
   const [deletePlanOpen, setDeletePlanOpen] = useState(false);
   const [deletingPlan, setDeletingPlan] = useState(false);
+  const [savingActive, setSavingActive] = useState(false);
 
   const openTaskId = searchParams.get('tarefa');
   const openTask = (taskId: string) => setSearchParams(prev => { const next = new URLSearchParams(prev); next.set('tarefa', taskId); return next; });
@@ -76,7 +78,7 @@ export function PlanPage() {
 
       if (e.key.toLowerCase() === 'n' && tab === 'quadro' && buckets.length > 0) {
         e.preventDefault();
-        createTask(buckets[0].id, 'Nova tarefa', user.id).then(created => {
+        createTask(buckets[0].id, 'Nova tarefa').then(created => {
           if (created) openTask(created.id);
         });
       }
@@ -119,6 +121,22 @@ export function PlanPage() {
   }
 
   const canManagePlan = isAdmin || plan.criado_por === user.id;
+  const active = plan.talki_plan_settings?.ativo !== false;
+
+  const toggleActive = async () => {
+    if (savingActive) return;
+    setSavingActive(true);
+    try {
+      const { error } = await supabase.rpc('talki_set_project_active', { p_plan_id: plan.id, p_ativo: !active });
+      if (error) throw error;
+      toast.success(active ? 'Projeto inativado.' : 'Projeto reativado.');
+      await reload();
+    } catch {
+      toast.error('Não foi possível alterar o estado do projeto.');
+    } finally {
+      setSavingActive(false);
+    }
+  };
 
   const handleDeletePlan = async () => {
     setDeletingPlan(true);
@@ -134,7 +152,7 @@ export function PlanPage() {
     <div className="space-y-5 pb-4">
       <section className="mb-7 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
-          <p className="eyebrow mb-2 flex items-center gap-2"><Sparkles className="size-3 text-primary" /> Workspace ativo</p>
+          <p className="eyebrow mb-2 flex items-center gap-2"><Sparkles className="size-3 text-primary" /> Projeto {active ? 'ativo' : 'inativo'}</p>
           <h2 className="gradient-text text-[clamp(1.8rem,3.2vw,2.8rem)] font-semibold leading-[1.08] tracking-[-0.05em]">{plan.nome}</h2>
           {plan.descricao && <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{plan.descricao}</p>}
         </div>
@@ -152,6 +170,7 @@ export function PlanPage() {
                   <Button variant="ghost" size="icon-sm" aria-label="Mais ações do projeto"><MoreHorizontal /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem disabled={savingActive} onClick={() => void toggleActive()}>{active ? 'Inativar projeto' : 'Reativar projeto'}</DropdownMenuItem>
                   <DropdownMenuItem variant="destructive" onClick={() => setDeletePlanOpen(true)}><Trash2 /> Excluir projeto</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -187,7 +206,7 @@ export function PlanPage() {
               onRenameBucket={renameBucket}
               onDeleteBucket={deleteBucket}
               onCreateBucket={createBucket}
-              onCreateTask={(bucketId, titulo) => createTask(bucketId, titulo, user.id)}
+              onCreateTask={(bucketId, titulo) => createTask(bucketId, titulo)}
               onToggleDone={toggleTaskDone}
               onChangeColor={(taskId, cor) => updateTaskFields(taskId, { cor })}
               onOpenTask={openTask}
