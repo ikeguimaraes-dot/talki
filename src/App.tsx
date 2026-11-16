@@ -15,6 +15,7 @@ import { ConcluidasPage } from '@/pages/concluidas-page';
 import { ComunicadosPage } from '@/pages/comunicados-page';
 
 
+const EntregasPage = lazy(() => import('@/pages/entregas-page').then(m => ({ default: m.EntregasPage })));
 const MiniPage = lazy(() => import('@/pages/mini-page').then(m => ({ default: m.MiniPage })));
 const KanbanPage = lazy(() => import('@/pages/kanban-page').then(m => ({ default: m.KanbanPage })));
 const BauPage = lazy(() => import('@/pages/bau-page').then(m => ({ default: m.BauPage })));
@@ -69,6 +70,7 @@ function App() {
           <Route path="/relatorios" element={<JornadaRelatoriosPage />} />
           <Route path="/gestao/:cadastro" element={<JornadaAdminPage />} />
           <Route path="/admin" element={<Navigate to="/gestao" replace />} />
+          <Route path="/entregas" element={<EntregasPage />} />
           <Route path="/tarefas" element={<TarefasPage />} />
           <Route path="/tarefas/:planId" element={<PlanPage />} />
           <Route path="/marcacoes" element={<MarcacoesPage />} />
