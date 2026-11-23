@@ -3,7 +3,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { APP_URL, ORIGIN, classifyUrl } = require('./navigation.cjs');
 let win, tray, quitting = false;
-let preferences = { pinned: true };
+let preferences = { pinned: true, startupConfigured: false };
 function savePreferences() {
   fs.writeFileSync(path.join(app.getPath('userData'), 'preferences.json'), JSON.stringify(preferences));
 }
@@ -14,7 +14,7 @@ function menus() {
   const actions = [
     { label: 'Mostrar Talki Mini', click: show },
     { label: 'Sempre por cima', type: 'checkbox', checked: preferences.pinned, click: item => { preferences.pinned = item.checked; win.setAlwaysOnTop(item.checked); savePreferences(); menus(); } },
-    { label: 'Iniciar com o computador', type: 'checkbox', checked: app.getLoginItemSettings().openAtLogin, click: item => { app.setLoginItemSettings({ openAtLogin: item.checked }); menus(); } },
+    { label: 'Iniciar com o computador', type: 'checkbox', checked: app.getLoginItemSettings().openAtLogin, click: item => { app.setLoginItemSettings({ openAtLogin: item.checked }); preferences.startupConfigured = true; savePreferences(); menus(); } },
     { label: 'Atualizar', accelerator: 'CmdOrCtrl+R', click: () => win.loadURL(APP_URL) },
     { label: 'Abrir Talki completo', click: () => openExternal(`${ORIGIN}/`) },
     { type: 'separator' },
@@ -36,6 +36,10 @@ else {
   app.on('will-quit', () => globalShortcut.unregisterAll());
   app.whenReady().then(() => {
     try { preferences = { ...preferences, ...JSON.parse(fs.readFileSync(path.join(app.getPath('userData'), 'preferences.json'), 'utf8')) }; } catch { /* first launch */ }
+    if (app.isPackaged && !preferences.startupConfigured) {
+      app.setLoginItemSettings({ openAtLogin: true });
+      preferences.startupConfigured = true; savePreferences();
+    }
     const area = screen.getPrimaryDisplay().workArea;
     win = new BrowserWindow({
       width: 430, height: Math.min(700, area.height - 40), minWidth: 360, minHeight: 440,
@@ -43,12 +47,12 @@ else {
       title: 'Talki Mini', backgroundColor: '#10111b', show: false,
       alwaysOnTop: preferences.pinned, autoHideMenuBar: process.platform === 'win32',
       icon: path.join(__dirname, 'assets/icon.png'),
-      webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true, partition: 'persist:talki-mini' },
+      webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true, backgroundThrottling: false, partition: 'persist:talki-mini' },
     });
     if (process.platform === 'darwin') win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     const ses = session.fromPartition('persist:talki-mini');
-    ses.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
-    ses.setPermissionCheckHandler(() => false);
+    ses.setPermissionRequestHandler((contents, permission, callback, details) => callback(permission === 'notifications' && contents === win.webContents && details.isMainFrame && classifyUrl(details.requestingUrl) === 'mini'));
+    ses.setPermissionCheckHandler((contents, permission, origin, details) => permission === 'notifications' && contents === win.webContents && origin === ORIGIN && details.isMainFrame && classifyUrl(contents.getURL()) === 'mini');
     ses.on('will-download', event => event.preventDefault());
     win.webContents.on('will-attach-webview', event => event.preventDefault());
     win.webContents.setWindowOpenHandler(({ url }) => { openExternal(url); return { action: 'deny' }; });

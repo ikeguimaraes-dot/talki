@@ -23,3 +23,9 @@ export function filterExecutions(rows:Execution[],userId:string,scope:string,sta
  return rows.filter(e=>(scope==='gestor'?e.gestor===userId:scope==='grupo'?true:e.responsavel===userId)&&(status==='todas'||(status==='abertas'?!['concluida','cancelada'].includes(e.status):e.status===status))&&normalize(`${e.titulo} ${e.contexto} ${e.responsavel_nome}`).includes(normalize(query)));
 }
 export function formatDeliveryDate(value:string){return new Date(value).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short',timeStyle:'short'});}
+
+export function desktopDeliveryQueue(rows:Execution[], userId:string, now:Date, all:boolean){
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'});
+ return rows.filter(e=>e.responsavel===userId&&['pendente','devolvida','enviada'].includes(e.status)&&(all||today.format(new Date(e.vence_em))<=today.format(now)))
+  .sort((a,b)=>Number(a.status==='enviada')-Number(b.status==='enviada')||new Date(a.vence_em).getTime()-new Date(b.vence_em).getTime()||a.id.localeCompare(b.id));
+}

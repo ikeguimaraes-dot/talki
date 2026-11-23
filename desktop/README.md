@@ -13,7 +13,7 @@ Aplicativo online para macOS (Apple Silicon e Intel) e Windows x64. A janela car
 - Concluir registra horário no servidor e move para Finalizado.
 - O botão de fechar recolhe a janela; use o ícone na barra de menus/bandeja para recuperá-la. Para encerrar, escolha **Sair do aplicativo**.
 - Atalho global: **Cmd+Alt+T** no Mac; **Ctrl+Alt+T** no Windows. Se outro aplicativo ocupar o atalho, use o ícone.
-- **Sempre por cima** e **Iniciar com o computador** ficam no menu do aplicativo/ícone. Inicialização automática é opcional e começa desativada.
+- **Sempre por cima** e **Iniciar com o computador** ficam no menu do aplicativo/ícone. Inicialização automática é habilitada na primeira execução do aplicativo empacotado e pode ser desativada no menu.
 - No Windows, pressione Alt para revelar o menu.
 - Detalhes de tarefas e recuperação de senha abrem no navegador padrão. Pode ser necessário entrar também no navegador.
 - Sincroniza a cada 30 segundos quando visível e ao recuperar foco/conexão. Sem internet, não conclui nem cria tarefas; o formulário permanece para tentar novamente.
@@ -39,3 +39,6 @@ Os arquivos de teste estão em `desktop/release`. Antes da distribuição geral,
 As alterações da interface entram pelo deploy web. Atualizações de Electron e recursos nativos exigem recompilar/reinstalar o aplicativo; esta versão não possui atualização automática do executável.
 
 Para builds oficiais, remova `mac.identity: "-"` (assinatura ad-hoc de teste) e `win.signExecutable: false` antes de configurar os certificados/credenciais de assinatura no ambiente de build. Nunca coloque certificados, senhas ou tokens no repositório. A assinatura ad-hoc válida do Mac permite o teste local, mas não substitui Developer ID e notarização.
+
+### Integração Maestri
+A seção Entregas Maestri usa os registros canônicos e a sessão autenticada, sem criar cópias. O funcionário pode salvar checklist, enviar evidências e acompanhar validação. Lembretes de prazo são opt-in e não exibem informações confidenciais na notificação. A sincronização das entregas ocorre a cada minuto, inclusive com o widget recolhido. Em novos perfis do aplicativo empacotado, iniciar com o computador é habilitado na primeira execução; o menu permite desativar. Nenhum dado da tela, áudio, teclado ou atividade pessoal é coletado.
