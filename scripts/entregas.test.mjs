@@ -22,3 +22,12 @@ test('catalog combines area, cadence and accent-insensitive checklist search',()
  assert.equal(filterCatalog(rows,'','mensal','').length,1);
  assert.equal(filterCatalog(rows,'financeiro','','inexistente').length,0);
 });
+
+test('desktop queue excludes other users, closed and future deliveries by default',async()=>{
+ const {desktopDeliveryQueue}=await import('../src/lib/entregas.ts');
+ const base={...e,vence_em:'2026-11-23T15:00:00Z'};
+ const rows=[base,{...base,id:'future',vence_em:'2026-11-24T15:00:00Z'},{...base,id:'other',responsavel:'other'},{...base,id:'closed',status:'concluida'},{...base,id:'review',status:'enviada'}];
+ const now=new Date('2026-11-23T16:00:00Z');
+ assert.deepEqual(desktopDeliveryQueue(rows,'executor',now,false).map(x=>x.id),['e','review']);
+ assert.deepEqual(desktopDeliveryQueue(rows,'executor',now,true).map(x=>x.id),['e','future','review']);
+});

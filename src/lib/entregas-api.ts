@@ -26,3 +26,13 @@ export async function saveChecklist(e:Execution,checked:string[]){
 export async function moveDelivery(e:Execution,action:'enviar'|'aceitar'|'devolver',text:string){
  const {error}=await db.rpc('maestri_movimentar_entrega',{p_id:e.id,p_acao:action,p_texto:text,p_versao:e.versao});if(error)throw new Error(error.message);
 }
+
+// Read only the current user's assigned occurrences; RLS remains authoritative.
+export async function loadMyDeliveries(userId:string):Promise<Execution[]> {
+ const result:Execution[]=[];
+ for(let offset=0;;offset+=500){
+  const {data,error}=await db.from('maestri_entregas_execucao').select('*').eq('responsavel',userId).in('status',['pendente','devolvida','enviada']).order('vence_em').order('id').range(offset,offset+499);
+  if(error)throw new Error(error.message);
+  result.push(...data as Execution[]);if(data.length<500)return result;
+ }
+}

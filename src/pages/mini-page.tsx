@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { miniToday, isMiniToday } from '@/lib/mini';
 import { formatDateBR } from '@/lib/date';
+import { MiniDeliveries } from '@/components/entregas/mini-deliveries';
 
 interface MiniTask {
   id: string; titulo: string; plan_id: string; inicio: string | null; prazo: string | null; prazo_hora: string | null;
@@ -158,6 +159,7 @@ function MiniTasks({ user }: { user: User }) {
         <div><p className="text-xs text-muted-foreground">{new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date())}</p><h1 className="mt-1 text-2xl font-semibold tracking-tight">Um passo de cada vez.</h1></div>
         <Button size="icon-sm" variant="ghost" aria-label="Atualizar tarefas" disabled={busy !== null} onClick={() => void load()}><RefreshCw className="size-4" /></Button>
       </div>
+      <MiniDeliveries userId={user.id} />
       <Button className="w-full rounded-xl" onClick={() => setCreating(previous => !previous)} disabled={busy !== null}><Plus className="size-4" /> Nova tarefa para mim</Button>
       {creating && <form onSubmit={create} className="space-y-3 rounded-2xl border border-primary/30 bg-muted/30 p-3">
         <div className="flex items-center justify-between"><h2 className="text-sm font-medium">Criar tarefa</h2><Button type="button" size="icon-sm" variant="ghost" disabled={busy !== null} aria-label="Fechar criação" onClick={() => setCreating(false)}><X className="size-4" /></Button></div>
