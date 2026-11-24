@@ -31,3 +31,12 @@ test('desktop queue excludes other users, closed and future deliveries by defaul
  assert.deepEqual(desktopDeliveryQueue(rows,'executor',now,false).map(x=>x.id),['e','review']);
  assert.deepEqual(desktopDeliveryQueue(rows,'executor',now,true).map(x=>x.id),['e','future','review']);
 });
+test('responsibility cards preserve unit, shared ownership and tenant scope without duplicating templates inside a card',async()=>{
+ const {responsibilityCards}=await import('../src/lib/entregas.ts');
+ const row={group_id:'g1',id:'a',documento:{id:'a',area:'Operação',areaId:'op',owner:'Meet: Ana / Bia · Match: VAGO'}};
+ const cards=responsibilityCards([row,row,{...row,group_id:'g2'},{...row,id:'b',documento:{...row.documento,owner:'Camilo (coordenação)'}}]);
+ assert.equal(cards.length,7);
+ assert.equal(cards.find(c=>c.person==='Ana'&&c.groupId==='g1').templates.length,1);
+ assert.equal(cards.find(c=>c.person==='VAGO').context,'Match');
+ assert.equal(cards.find(c=>c.person==='Camilo').templates.length,1);
+});
