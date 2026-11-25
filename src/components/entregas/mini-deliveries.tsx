@@ -50,7 +50,7 @@ export function MiniDeliveries({userId}:{userId:string}) {
     }
   }
   return <section aria-label="Entregas Maestri" className="space-y-3 rounded-2xl border border-primary/30 bg-card p-3">
-    <div className="flex items-center justify-between gap-2"><div><h2 className="text-sm font-semibold">Entregas Maestri</h2><p className="text-xs text-muted-foreground">Direto da gestão · sem duplicar tarefas</p></div><Button size="sm" variant="ghost" onClick={()=>void reload()}>Atualizar</Button></div>
+    <div className="flex items-center justify-between gap-2"><div><h2 className="text-sm font-semibold">Entregas Maestri</h2><p className="text-xs text-muted-foreground">Direto da gestão · sem duplicar tarefas</p><a href="/entregas?view=agenda" target="_blank" rel="noreferrer" className="text-xs text-primary underline">Meu calendário completo ↗</a></div><Button size="sm" variant="ghost" onClick={()=>void reload()}>Atualizar</Button></div>
     <div className="flex flex-wrap gap-2 text-xs"><span className="rounded-lg bg-muted px-2 py-1">{rows.length} abertas</span><span className="rounded-lg bg-muted px-2 py-1 text-amber-500">{overdue} vencidas</span><span className="rounded-lg bg-muted px-2 py-1">{rows.filter(e=>e.status==='enviada').length} em validação</span></div>
     <div className="flex flex-wrap gap-1"><Button size="sm" variant={!all?'secondary':'ghost'} onClick={()=>setAll(false)}>Hoje e atrasadas</Button><Button size="sm" variant={all?'secondary':'ghost'} onClick={()=>setAll(true)}>Todas</Button></div>
     {typeof Notification!=='undefined'&&<Button size="sm" variant="outline" onClick={()=>void toggleNotify()}>{notify?'Desativar lembretes':'Ativar lembretes de prazo'}</Button>}

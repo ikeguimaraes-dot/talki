@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/supabase';
+import type { DeliveryAgenda } from './delivery-calendar';
 import type { CatalogRow, Execution, DeliveryEvent } from './entregas';
 // Reuse the signed-in Talki session. Every read and RPC is authorized by existing Maestri RLS.
 const db:SupabaseClient=supabase;
@@ -13,8 +14,8 @@ async function rows<T>(table:string,approved=false):Promise<T[]> {
  }
 }
 export async function loadDeliveries(){
- const [catalog,executions]=await Promise.all([rows<CatalogRow>('maestri_catalogo',true),rows<Execution>('maestri_entregas_execucao')]);
- return {catalog,executions:executions.sort((a,b)=>a.vence_em.localeCompare(b.vence_em))};
+ const [catalog,executions,agendas]=await Promise.all([rows<CatalogRow>('maestri_catalogo',true),rows<Execution>('maestri_entregas_execucao'),rows<DeliveryAgenda>('maestri_agenda')]);
+ return {catalog,agendas,executions:executions.sort((a,b)=>a.vence_em.localeCompare(b.vence_em))};
 }
 export async function deliveryHistory(id:string):Promise<DeliveryEvent[]>{
  const {data,error}=await db.from('maestri_entregas_eventos').select('id,entrega_id,acao,texto,criado_em').eq('entrega_id',id).order('criado_em',{ascending:false}).limit(100);
@@ -35,4 +36,17 @@ export async function loadMyDeliveries(userId:string):Promise<Execution[]> {
   if(error)throw new Error(error.message);
   result.push(...data as Execution[]);if(data.length<500)return result;
  }
+}
+
+// Events are real Maestri audit events, not inferred activity. Bound to authorized execution IDs.
+export async function calendarHistory(ids:string[],from:string,to:string):Promise<DeliveryEvent[]> {
+ const result:DeliveryEvent[]=[];
+ const unique=[...new Set(ids)];
+ for(let i=0;i<unique.length;i+=50){
+  for(let offset=0;;offset+=500){
+   const {data,error}=await db.from('maestri_entregas_eventos').select('id,entrega_id,acao,texto,criado_em').in('entrega_id',unique.slice(i,i+50)).gte('criado_em',from+'T03:00:00Z').lt('criado_em',to+'T03:00:00Z').order('criado_em',{ascending:false}).order('id').range(offset,offset+499);
+   if(error)throw new Error(error.message);result.push(...data as DeliveryEvent[]);if(data.length<500)break;
+  }
+ }
+ return result.sort((a,b)=>b.criado_em.localeCompare(a.criado_em)||b.id-a.id);
 }

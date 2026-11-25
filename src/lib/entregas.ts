@@ -4,7 +4,7 @@ export interface DeliveryTemplate {
 }
 export interface CatalogRow { group_id: string; id: string; documento: DeliveryTemplate }
 export interface Execution {
- id: string; titulo: string; contexto: string; criterios: string; responsavel: string; gestor: string;
+ id: string; group_id: string; agenda_id: string; titulo: string; contexto: string; criterios: string; responsavel: string; gestor: string;
  responsavel_nome: string; gestor_nome: string; vence_em: string; status: string; versao: number;
  checklist: string[]; checklist_respostas: string[]; evidencia: string | null; motivo: string | null;
 }
